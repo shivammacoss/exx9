@@ -112,6 +112,12 @@ class CopyTradeEngine:
             return None, f"unknown_copy_type:{ct}"
 
         rounded = round(raw, 2)
+        # Snap any positive sub-min ratio up to broker minimum (0.01) so a
+        # smaller-than-master follower still mirrors every trade. Without this,
+        # 0.01-lot master trades silently skipped for any follower whose
+        # equity-share rounds below 0.01.
+        if raw > 0 and rounded < MIN_COPY_LOT:
+            rounded = MIN_COPY_LOT
         if rounded < MIN_COPY_LOT:
             return None, "below_min_lot_0_01"
         return rounded, None
@@ -705,12 +711,22 @@ class _ComputeLotSizeTests(unittest.TestCase):
         self.assertIsNone(lots)
         self.assertEqual(err, "mam_zero_allocation_pct")
 
-    def test_below_min_lot(self):
+    def test_below_min_lot_snaps_to_min(self):
+        # Tiny follower vs huge master — raw = 1.0 * (10/10000) = 0.001.
+        # Old behavior skipped; new behavior snaps up to MIN_COPY_LOT (0.01)
+        # so the follower still mirrors every master trade.
         ma, ia = self._accounts(10000, 10)
         alloc = SimpleNamespace(allocation_amount=100, allocation_pct=None, copy_type="signal")
         lots, err = CopyTradeEngine.compute_lot_size(1.0, ma, alloc, ia, total_pool=0, copy_type="signal")
+        self.assertIsNone(err)
+        self.assertEqual(lots, MIN_COPY_LOT)
+
+    def test_zero_master_lots_still_skips(self):
+        ma, ia = self._accounts(10000, 5000)
+        alloc = SimpleNamespace(allocation_amount=100, allocation_pct=None, copy_type="signal")
+        lots, err = CopyTradeEngine.compute_lot_size(0.0, ma, alloc, ia, total_pool=0, copy_type="signal")
         self.assertIsNone(lots)
-        self.assertEqual(err, "below_min_lot_0_01")
+        self.assertEqual(err, "zero_master_lots")
 
 
 if __name__ == "__main__":
