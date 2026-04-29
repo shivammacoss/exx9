@@ -699,6 +699,8 @@ class InvestorAllocation(Base):
     status = Column(String(20), default="active")
     total_profit = Column(Numeric(18, 8), default=0)
     last_distribution_at = Column(DateTime(timezone=True), nullable=True)
+    drawdown_tripped = Column(Boolean, default=False, nullable=False)
+    drawdown_tripped_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 

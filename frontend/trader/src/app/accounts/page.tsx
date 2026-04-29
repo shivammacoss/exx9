@@ -15,6 +15,10 @@ import {
   Trash2,
   Wallet,
   Landmark,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
 } from 'lucide-react';
 import DashboardShell from '@/components/layout/DashboardShell';
 import { Button } from '@/components/ui/Button';
@@ -1121,6 +1125,214 @@ function BalanceTrendBlock({ accountId, balance }: { accountId: string; balance:
   );
 }
 
+type RiskState = {
+  allocation_id: string;
+  max_drawdown_pct: number | null;
+  enabled: boolean;
+  tripped: boolean;
+  tripped_at: string | null;
+  current_drawdown_pct: number;
+};
+
+/** Loss-protection panel for MAM follower accounts (CF prefix). Lets the
+ * investor cap their drawdown — once equity falls by the configured %, the
+ * copy engine force-closes open mirrors and stops opening new ones until
+ * the investor explicitly resets. Default state is "off". */
+function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen: boolean }) {
+  const [risk, setRisk] = useState<RiskState | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [draftEnabled, setDraftEnabled] = useState(false);
+  const [draftPct, setDraftPct] = useState<string>('20');
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const fetchedOnceRef = useRef(false);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api.get<RiskState>(`/social/account-risk/${accountId}`);
+      setRisk(data);
+      setDraftEnabled(data.enabled);
+      if (data.max_drawdown_pct != null) setDraftPct(String(data.max_drawdown_pct));
+    } catch {
+      // If no allocation exists for this account, hide the panel silently.
+      setRisk(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [accountId]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (fetchedOnceRef.current) return;
+    fetchedOnceRef.current = true;
+    void refresh();
+  }, [isOpen, refresh]);
+
+  // Auto-refresh tripped/drawdown state every 15s while card is expanded so
+  // the user sees the limit fire without manual reload.
+  useEffect(() => {
+    if (!isOpen || !risk) return;
+    const t = setInterval(refresh, 15000);
+    return () => clearInterval(t);
+  }, [isOpen, risk, refresh]);
+
+  const onSave = async () => {
+    setSaving(true);
+    try {
+      const pct = draftEnabled ? Number(draftPct) : null;
+      if (draftEnabled) {
+        if (!Number.isFinite(pct as number) || (pct as number) <= 0 || (pct as number) >= 100) {
+          toast.error('Enter a value between 1 and 99');
+          setSaving(false);
+          return;
+        }
+      }
+      const data = await api.put<RiskState>(`/social/account-risk/${accountId}`, {
+        max_drawdown_pct: pct,
+      });
+      setRisk(data);
+      toast.success(draftEnabled ? `Loss protection set at ${pct}%` : 'Loss protection turned off');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const onReset = async () => {
+    setResetting(true);
+    try {
+      const data = await api.post<RiskState>(`/social/account-risk/${accountId}/reset`, {});
+      setRisk(data);
+      toast.success('Copy trading resumed');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Could not reset');
+    } finally {
+      setResetting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+  if (loading && !risk) {
+    return (
+      <div className="rounded-xl border border-border-primary bg-bg-secondary p-4 mt-4">
+        <div className="text-xs text-text-tertiary">Loading loss protection...</div>
+      </div>
+    );
+  }
+  if (!risk) return null;
+
+  const tripped = risk.tripped;
+  const headerIcon = tripped
+    ? <ShieldAlert size={18} className="text-red-400" />
+    : risk.enabled
+      ? <ShieldCheck size={18} className="text-[#2196f3]" />
+      : <Shield size={18} className="text-text-tertiary" />;
+
+  const headerLabel = tripped
+    ? 'Loss limit triggered — copy trading paused'
+    : risk.enabled
+      ? `Loss protection active at ${Number(risk.max_drawdown_pct).toFixed(2)}%`
+      : 'Loss protection: Off';
+
+  return (
+    <div
+      className={clsx(
+        'rounded-xl p-4 mt-4 border',
+        tripped
+          ? 'border-red-500/40 bg-red-500/5'
+          : risk.enabled
+            ? 'border-[#2196f3]/30 bg-[#2196f3]/5'
+            : 'border-border-primary bg-bg-secondary',
+      )}
+    >
+      <div className="flex items-start gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {headerIcon}
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-text-primary truncate">Loss Protection (MAM)</p>
+            <p className={clsx('text-xs truncate', tripped ? 'text-red-400' : 'text-text-tertiary')}>
+              {headerLabel}
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">Current loss</p>
+          <p className={clsx(
+            'text-base font-bold tabular-nums font-mono',
+            risk.current_drawdown_pct > 0 ? 'text-red-400' : 'text-[#2196f3]',
+          )}>
+            {risk.current_drawdown_pct > 0 ? `-${risk.current_drawdown_pct.toFixed(2)}%` : '0.00%'}
+          </p>
+        </div>
+      </div>
+
+      {tripped && (
+        <div className="mt-3 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+          <AlertTriangle size={14} className="text-red-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-red-300 leading-relaxed">
+            Your account hit the {Number(risk.max_drawdown_pct).toFixed(2)}% drawdown limit on
+            {' '}{risk.tripped_at ? new Date(risk.tripped_at).toLocaleString() : 'recent activity'}.
+            All open mirrors were closed and master trades will not be copied until you reset.
+          </div>
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-col sm:flex-row sm:items-end gap-3 flex-wrap">
+        <label className="inline-flex items-center gap-2 text-xs text-text-secondary cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={draftEnabled}
+            onChange={(e) => setDraftEnabled(e.target.checked)}
+            className="h-4 w-4 accent-[#2196f3]"
+          />
+          Enable loss limit
+        </label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={1}
+            max={99}
+            step={0.5}
+            value={draftPct}
+            onChange={(e) => setDraftPct(e.target.value)}
+            disabled={!draftEnabled}
+            className="w-20 px-2 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono tabular-nums outline-none focus:border-[#2196f3]/40 disabled:opacity-50"
+          />
+          <span className="text-xs text-text-tertiary">% of deposit</span>
+        </div>
+        <div className="flex items-center gap-2 sm:ml-auto">
+          {tripped && (
+            <button
+              type="button"
+              onClick={onReset}
+              disabled={resetting}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/40 text-red-400 text-xs font-semibold hover:bg-red-500/10 transition-colors disabled:opacity-60"
+            >
+              {resetting ? 'Resetting...' : 'Reset & Resume'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#2196f3] text-white text-xs font-bold hover:bg-[#1976d2] transition-colors disabled:opacity-60"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-3 text-[11px] text-text-tertiary leading-relaxed">
+        When enabled, the system continuously checks your equity. If your loss reaches the limit,
+        all open copy positions are closed and new master trades stop copying until you press
+        Reset & Resume. Off by default.
+      </p>
+    </div>
+  );
+}
+
 function AccountCard({
   row,
   initialExpanded = false,
@@ -1311,6 +1523,11 @@ function AccountCard({
               </div>
             </div>
           </div>
+
+          {/* Loss protection — only on MAM follower (CF) sub-accounts */}
+          {row.account_number.startsWith('CF') && (
+            <RiskProtectionPanel accountId={row.id} isOpen={open} />
+          )}
 
           {/* Action buttons row */}
           <div className="relative z-[60] flex flex-wrap items-center gap-2 pt-4 sm:pt-5 mt-4 sm:mt-5" style={{ borderTop: '1px solid var(--border-primary)' }}>

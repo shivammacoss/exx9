@@ -186,6 +186,44 @@ async def my_allocations(
     )
 
 
+@router.get("/account-risk/{investor_account_id}")
+async def get_account_risk(
+    investor_account_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await social_service.get_account_risk(
+        investor_account_id=investor_account_id,
+        user_id=current_user["user_id"], db=db,
+    )
+
+
+@router.put("/account-risk/{investor_account_id}")
+async def update_account_risk(
+    investor_account_id: UUID,
+    max_drawdown_pct: Decimal | None = Body(None, embed=True),
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await social_service.update_account_risk(
+        investor_account_id=investor_account_id,
+        max_drawdown_pct=max_drawdown_pct,
+        user_id=current_user["user_id"], db=db,
+    )
+
+
+@router.post("/account-risk/{investor_account_id}/reset")
+async def reset_account_risk(
+    investor_account_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await social_service.reset_account_risk(
+        investor_account_id=investor_account_id,
+        user_id=current_user["user_id"], db=db,
+    )
+
+
 @router.get("/pamm/{allocation_id}/trades")
 async def pamm_master_trades(
     allocation_id: UUID,

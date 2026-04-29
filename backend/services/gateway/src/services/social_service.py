@@ -1381,6 +1381,113 @@ async def my_allocations(user_id: UUID, db: AsyncSession) -> dict:
     }
 
 
+async def _resolve_allocation_for_account(
+    investor_account_id: UUID, user_id: UUID, db: AsyncSession,
+) -> InvestorAllocation:
+    """Find the active investor allocation tied to a CF/IF sub-account, owned
+    by the calling user. Used by the risk-protection endpoints which are
+    addressed by trading account id (matches the accounts page card)."""
+    q = await db.execute(
+        select(InvestorAllocation).where(
+            InvestorAllocation.investor_account_id == investor_account_id,
+            InvestorAllocation.investor_user_id == user_id,
+            InvestorAllocation.status == "active",
+        )
+    )
+    alloc = q.scalar_one_or_none()
+    if not alloc:
+        raise HTTPException(
+            status_code=404,
+            detail="No active follower allocation found for this account",
+        )
+    return alloc
+
+
+def _serialize_risk(alloc: InvestorAllocation, current_dd_pct: float) -> dict:
+    return {
+        "allocation_id": str(alloc.id),
+        "max_drawdown_pct": float(alloc.max_drawdown_pct) if alloc.max_drawdown_pct is not None else None,
+        "enabled": alloc.max_drawdown_pct is not None and float(alloc.max_drawdown_pct) > 0,
+        "tripped": bool(alloc.drawdown_tripped),
+        "tripped_at": alloc.drawdown_tripped_at.isoformat() if alloc.drawdown_tripped_at else None,
+        "current_drawdown_pct": round(current_dd_pct, 2),
+    }
+
+
+async def _compute_current_drawdown(
+    alloc: InvestorAllocation, db: AsyncSession,
+) -> float:
+    """Live drawdown % vs the allocation's deposited amount. 0 (or negative
+    drift) when in profit. Mirrors the copy-engine's protection check."""
+    baseline = float(alloc.allocation_amount or 0)
+    if baseline <= 0 or not alloc.investor_account_id:
+        return 0.0
+    acct = await db.get(TradingAccount, alloc.investor_account_id)
+    if not acct:
+        return 0.0
+    current = float(acct.equity or acct.balance or 0)
+    loss = baseline - current
+    if loss <= 0:
+        return 0.0
+    return (loss / baseline) * 100.0
+
+
+async def get_account_risk(
+    investor_account_id: UUID, user_id: UUID, db: AsyncSession,
+) -> dict:
+    alloc = await _resolve_allocation_for_account(investor_account_id, user_id, db)
+    dd = await _compute_current_drawdown(alloc, db)
+    return _serialize_risk(alloc, dd)
+
+
+async def update_account_risk(
+    investor_account_id: UUID,
+    max_drawdown_pct: Decimal | None,
+    user_id: UUID,
+    db: AsyncSession,
+) -> dict:
+    """Set or clear the investor's drawdown protection limit.
+
+    Pass max_drawdown_pct=None to disable. Saving a new limit also clears the
+    tripped flag so the user can re-enable copy trading after editing the value
+    without going through the explicit reset step.
+    """
+    alloc = await _resolve_allocation_for_account(investor_account_id, user_id, db)
+
+    if max_drawdown_pct is None:
+        alloc.max_drawdown_pct = None
+    else:
+        if max_drawdown_pct <= 0 or max_drawdown_pct >= 100:
+            raise HTTPException(
+                status_code=400,
+                detail="max_drawdown_pct must be between 0 and 100 (exclusive)",
+            )
+        alloc.max_drawdown_pct = max_drawdown_pct
+
+    alloc.drawdown_tripped = False
+    alloc.drawdown_tripped_at = None
+
+    await db.commit()
+    await db.refresh(alloc)
+    dd = await _compute_current_drawdown(alloc, db)
+    return _serialize_risk(alloc, dd)
+
+
+async def reset_account_risk(
+    investor_account_id: UUID, user_id: UUID, db: AsyncSession,
+) -> dict:
+    """Clear the tripped flag so copy trading resumes — limit value is preserved.
+    Investor is expected to call this after deciding to keep trading despite the
+    earlier drawdown breach (e.g. after topping up the account)."""
+    alloc = await _resolve_allocation_for_account(investor_account_id, user_id, db)
+    alloc.drawdown_tripped = False
+    alloc.drawdown_tripped_at = None
+    await db.commit()
+    await db.refresh(alloc)
+    dd = await _compute_current_drawdown(alloc, db)
+    return _serialize_risk(alloc, dd)
+
+
 async def pamm_master_trades(
     allocation_id: UUID, user_id: UUID, db: AsyncSession,
 ) -> dict:

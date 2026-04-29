@@ -207,6 +207,74 @@ class CopyTradeEngine:
         )
         return float(q.scalar() or 0)
 
+    async def _check_drawdown_protection(
+        self,
+        master: MasterAccount,
+        investor: InvestorAllocation,
+        db: AsyncSession,
+    ) -> bool:
+        """Investor-side stop-loss enforcement.
+
+        If the investor has set max_drawdown_pct on this allocation, and live
+        equity has fallen by that percentage from the deposited amount, force-
+        close every open mirror for this allocation and mark the allocation
+        tripped. Once tripped, the allocation stays tripped until the investor
+        manually resets it from the accounts page.
+
+        Returns True if the allocation is currently tripped (caller must skip
+        opening any new copies for it this cycle).
+        """
+        if investor.drawdown_tripped:
+            return True
+
+        max_dd = investor.max_drawdown_pct
+        if max_dd is None or float(max_dd) <= 0:
+            return False
+
+        if not investor.investor_account_id:
+            return False
+
+        baseline = float(investor.allocation_amount or 0)
+        if baseline <= 0:
+            return False
+
+        investor_account = await db.get(TradingAccount, investor.investor_account_id)
+        if not investor_account:
+            return False
+
+        current_equity = float(investor_account.equity or investor_account.balance or 0)
+        loss = baseline - current_equity
+        if loss <= 0:
+            return False
+
+        loss_pct = (loss / baseline) * 100.0
+        if loss_pct < float(max_dd):
+            return False
+
+        logger.warning(
+            "Drawdown limit hit: allocation=%s loss_pct=%.2f%% >= max=%.2f%% — force-closing mirrors",
+            investor.id, loss_pct, float(max_dd),
+        )
+
+        open_copies_q = await db.execute(
+            select(CopyTrade).where(
+                CopyTrade.investor_allocation_id == investor.id,
+                CopyTrade.status == "open",
+            )
+        )
+        for copy in open_copies_q.scalars().all():
+            try:
+                await self._close_copy(copy, master, db)
+            except Exception as e:
+                logger.error(
+                    "Drawdown force-close failed: copy=%s allocation=%s err=%s",
+                    copy.id, investor.id, e,
+                )
+
+        investor.drawdown_tripped = True
+        investor.drawdown_tripped_at = datetime.now(timezone.utc)
+        return True
+
     async def process_master(self, master: MasterAccount, db: AsyncSession) -> None:
         """One full sync cycle for a single master: read, diff, open/close children."""
         master_id_str = str(master.id)
@@ -256,6 +324,17 @@ class CopyTradeEngine:
         new_positions = current_master_pos_ids - prev_master_pos_ids
         closed_positions = prev_master_pos_ids - current_master_pos_ids
 
+        # Per-allocation drawdown evaluation runs every cycle so floating loss
+        # alone can trip the limit (no need to wait for a new master trade).
+        # Result is memoized so the new-positions loop below skips tripped
+        # allocations without re-checking equity per master position.
+        tripped_alloc_ids: set = set()
+        for investor in active_investors:
+            if resolve_copy_type(investor, master) == "pamm":
+                continue
+            if await self._check_drawdown_protection(master, investor, db):
+                tripped_alloc_ids.add(investor.id)
+
         for pos_id in new_positions:
             master_pos = master_open[pos_id]
             for investor in active_investors:
@@ -263,6 +342,12 @@ class CopyTradeEngine:
                 # master's account directly. Profit is distributed to their main
                 # wallet when the master closes the trade (see trading_service).
                 if resolve_copy_type(investor, master) == "pamm":
+                    continue
+                if investor.id in tripped_alloc_ids:
+                    logger.info(
+                        "Skip copy open: drawdown protection active for allocation=%s",
+                        investor.id,
+                    )
                     continue
                 investor_account = await db.get(TradingAccount, investor.investor_account_id)
                 if not investor_account or not investor_account.is_active:
