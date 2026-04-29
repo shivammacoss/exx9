@@ -158,13 +158,24 @@ function tradeExitLabel(
     ? ` @ ${Number(triggerPrice).toFixed(digits)}`
     : '';
 
-  if (r === 'sl') return { text: `Stop loss (SL)${priceStr}`, className: 'text-sell bg-sell/10 border-sell/20' };
+  if (r === 'sl' || r === 'stop_loss')
+    return { text: `Stop loss (SL)${priceStr}`, className: 'text-sell bg-sell/10 border-sell/20' };
 
-  if (r === 'tp') return { text: `Take profit (TP)${priceStr}`, className: 'text-buy bg-buy/10 border-buy/20' };
+  if (r === 'tp' || r === 'take_profit')
+    return { text: `Take profit (TP)${priceStr}`, className: 'text-buy bg-buy/10 border-buy/20' };
 
-  if (r === 'admin') return { text: 'Admin', className: 'text-warning bg-warning/10 border-warning/20' };
+  if (r === 'admin')
+    return { text: 'Admin', className: 'text-warning bg-warning/10 border-warning/20' };
 
-  // copy_close / copy / manual / anything else → show as Manual close.
+  if (r === 'margin' || r === 'liquidation' || r === 'margin_call')
+    return { text: 'Margin call', className: 'text-sell bg-sell/10 border-sell/20' };
+
+  if (r === 'copy_close' || r === 'copy' || r === 'copy_stopped' || r === 'managed_withdrawal')
+    return { text: 'Copy close', className: 'text-info bg-info/10 border-info/20' };
+
+  if (r === 'algo_close')
+    return { text: 'Algo close', className: 'text-info bg-info/10 border-info/20' };
+
   return { text: 'Manual close', className: 'text-text-tertiary bg-bg-hover border-border-glass' };
 
 }

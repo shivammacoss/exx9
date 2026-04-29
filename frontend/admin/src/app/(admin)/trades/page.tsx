@@ -662,9 +662,31 @@ export default function TradesPage() {
                         return true;
                       })
                       .map(t => {
-                      const reason = t.close_reason || 'manual';
-                      const reasonLabel = reason === 'sl' ? 'SL' : reason === 'tp' ? 'TP' : reason === 'admin' ? 'Admin' : 'Manual';
-                      const reasonColor = reason === 'sl' ? 'bg-danger/15 text-danger' : reason === 'tp' ? 'bg-success/15 text-success' : reason === 'admin' ? 'bg-warning/15 text-warning' : 'bg-text-tertiary/15 text-text-tertiary';
+                      const reason = (t.close_reason || 'manual').toLowerCase();
+                      let reasonLabel: string;
+                      let reasonColor: string;
+                      if (reason === 'sl' || reason === 'stop_loss') {
+                        reasonLabel = 'SL';
+                        reasonColor = 'bg-danger/15 text-danger';
+                      } else if (reason === 'tp' || reason === 'take_profit') {
+                        reasonLabel = 'TP';
+                        reasonColor = 'bg-success/15 text-success';
+                      } else if (reason === 'admin') {
+                        reasonLabel = 'Admin';
+                        reasonColor = 'bg-warning/15 text-warning';
+                      } else if (reason === 'margin' || reason === 'liquidation' || reason === 'margin_call') {
+                        reasonLabel = 'Margin';
+                        reasonColor = 'bg-danger/15 text-danger';
+                      } else if (reason === 'copy_close' || reason === 'copy' || reason === 'copy_stopped' || reason === 'managed_withdrawal') {
+                        reasonLabel = 'Copy close';
+                        reasonColor = 'bg-info/15 text-info';
+                      } else if (reason === 'algo_close') {
+                        reasonLabel = 'Algo';
+                        reasonColor = 'bg-info/15 text-info';
+                      } else {
+                        reasonLabel = 'Manual';
+                        reasonColor = 'bg-text-tertiary/15 text-text-tertiary';
+                      }
                       return (
                       <tr key={t.id} className="border-b border-border-primary/50 transition-fast hover:bg-bg-hover">
                         <td className="px-4 py-2.5 text-xxs text-text-tertiary font-mono tabular-nums">{formatDate(t.closed_at)}</td>
