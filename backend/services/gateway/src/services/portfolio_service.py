@@ -100,21 +100,29 @@ async def portfolio_summary(user_id: UUID, account_id: UUID | None, db: AsyncSes
 
         if symbol not in holdings:
             holdings[symbol] = {
-                "symbol": symbol, "total_lots": Decimal("0"), "avg_open_price": Decimal("0"),
-                "current_price": float(cp), "unrealized_pnl": Decimal("0"),
-                "positions_count": 0, "net_side": None, "_price_sum": Decimal("0"),
+                "symbol": symbol, "side": None, "lots": Decimal("0"),
+                "entry_price": Decimal("0"), "current_price": float(cp),
+                "pnl": Decimal("0"), "pnl_pct": 0.0, "positions_count": 0,
+                "_signed_lots": Decimal("0"), "_price_sum": Decimal("0"),
             }
         h = holdings[symbol]
-        h["total_lots"] += pos.lots
+        h["lots"] += pos.lots
+        h["_signed_lots"] += pos.lots if side_val.lower() == "buy" else -pos.lots
         h["_price_sum"] += pos.open_price * pos.lots
-        h["unrealized_pnl"] += pnl
+        h["pnl"] += pnl
+        h["current_price"] = float(cp)
         h["positions_count"] += 1
 
     for h in holdings.values():
-        if h["total_lots"] > 0:
-            h["avg_open_price"] = float(h["_price_sum"] / h["total_lots"])
-        h["total_lots"] = float(h["total_lots"])
-        h["unrealized_pnl"] = float(h["unrealized_pnl"])
+        if h["lots"] > 0:
+            avg_entry = h["_price_sum"] / h["lots"]
+            h["entry_price"] = float(avg_entry)
+            notional = float(avg_entry) * float(h["lots"])
+            h["pnl_pct"] = (float(h["pnl"]) / notional * 100.0) if notional > 0 else 0.0
+        h["side"] = "buy" if h["_signed_lots"] > 0 else ("sell" if h["_signed_lots"] < 0 else "flat")
+        h["lots"] = float(h["lots"])
+        h["pnl"] = float(h["pnl"])
+        del h["_signed_lots"]
         del h["_price_sum"]
 
     now = datetime.now(timezone.utc)
