@@ -43,10 +43,12 @@ class AlgoTradeRequest(BaseModel):
     # Strategy / trade identifiers — let multiple strategies coexist on one account.
     # Without these, a CLOSE on a symbol wipes every open position on that
     # symbol (including positions from other strategies on the same key).
-    # `trade_id` maps to the order's magic_number column under the hood; pick a
-    # different integer per strategy and pass the same value on OPEN and CLOSE.
+    # On CLOSE, the bot can pass back any of the three IDs returned at OPEN —
+    # position_id (exact position), order_id (the order that opened it), or
+    # trade_id (strategy tag stored as Order.magic_number).
     trade_id: Optional[int] = None
     position_id: Optional[str] = None
+    order_id: Optional[str] = None
 
 
 @router.post("/trade")
@@ -242,11 +244,13 @@ async def _close_trades(
 
     Filter precedence (most specific wins):
       1) body.position_id → close just that position (MT5 ticket-style)
-      2) body.trade_id    → close positions whose Order.magic_number matches
-      3) (no filter)      → close every open position on the symbol
+      2) body.order_id    → close the position that came out of that order
+      3) body.trade_id    → close positions whose Order.magic_number matches
+      4) (no filter)      → close every open position on the symbol
                             (legacy behaviour; kept for backwards compatibility
                             but unsafe when multiple strategies share a key —
-                            strategies should pass position_id or trade_id)
+                            strategies should pass position_id, order_id, or
+                            trade_id from the OPEN response)
     """
     base_filter = [
         Position.account_id == account.id,
@@ -261,6 +265,13 @@ async def _close_trades(
         except (ValueError, AttributeError):
             raise HTTPException(status_code=400, detail="Invalid position_id")
         base_filter.append(Position.id == pid)
+        pos_query = pos_query.where(*base_filter)
+    elif body and body.order_id:
+        try:
+            oid = UUID(body.order_id)
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=400, detail="Invalid order_id")
+        base_filter.append(Position.order_id == oid)
         pos_query = pos_query.where(*base_filter)
     elif body and body.trade_id is not None:
         pos_query = pos_query.join(

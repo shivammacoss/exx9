@@ -90,8 +90,11 @@ Opens a market order instantly at the current price.
 | Mode             | Field sent     | Effect                                                                |
 |------------------|----------------|-----------------------------------------------------------------------|
 | Single position  | `position_id`  | Closes **only that one position** (use the `position_id` from the OPEN response). |
+| By order         | `order_id`     | Closes **the position that came out of that order** (use the `order_id` from the OPEN response). |
 | Per-strategy     | `trade_id`     | Closes **only positions whose `trade_id` matches**. Other strategies on the same account are untouched. |
-| Symbol-wide      | *(neither)*    | Closes **every open position on the symbol** for this account. Convenient for single-strategy bots, **dangerous if multiple strategies share one API key** — they'll wipe each other out. |
+| Symbol-wide      | *(none)*       | Closes **every open position on the symbol** for this account. Convenient for single-strategy bots, **dangerous if multiple strategies share one API key** — they'll wipe each other out. |
+
+The bot does **not** need to track anything extra — every value you can pass here (`position_id`, `order_id`, `trade_id`) is already returned in the OPEN response. Save them with the trade, send them back at close time.
 
 ### Fields
 
@@ -100,6 +103,7 @@ Opens a market order instantly at the current price.
 | `action`      | string  | yes      | `"CLOSE"`                                                                   |
 | `symbol`      | string  | yes      | Instrument symbol                                                           |
 | `position_id` | string  | no       | Specific position UUID returned by an earlier OPEN (most precise close).    |
+| `order_id`    | string  | no       | Order UUID returned by an earlier OPEN — closes the position from that order. |
 | `trade_id`    | integer | no       | Same `trade_id` you used on OPEN — closes only that strategy's positions.   |
 
 ### Multi-strategy example
@@ -118,6 +122,16 @@ Strategy A and Strategy B both trade BTCUSD on the same account through the same
   "action": "CLOSE",
   "symbol": "XAUUSD",
   "position_id": "c0a8f9e2-6d4a-4b7f-9c1e-2a8b4d6e8f10"
+}
+```
+
+### Request body — close by order_id (works the same way — pick whichever ID your bot saved)
+
+```json
+{
+  "action": "CLOSE",
+  "symbol": "XAUUSD",
+  "order_id": "7b1f2c9d-3e4a-4f8b-9c1d-5e2a6b8d0f12"
 }
 ```
 
@@ -582,7 +596,7 @@ asyncio.run(stream())
 - **Symbol** is case-insensitive (`xauusd` = `XAUUSD`).
 - **Minimum lot**: `0.01`.
 - **Margin check**: a BUY/SELL is rejected if free margin is not enough — check `/account` first if you want to size trades dynamically.
-- **CLOSE** filters by `position_id` first, then `trade_id`, then falls back to "every open position on the symbol". If you run more than one strategy through one API key, **always pass `trade_id` (or `position_id`)** — otherwise one strategy's CLOSE will close another strategy's open position. Partial close (close N of the open lots) is not supported on this endpoint.
+- **CLOSE** filters by `position_id` first, then `order_id`, then `trade_id`, then falls back to "every open position on the symbol". If you run more than one strategy through one API key, **always pass one of these IDs** (all three come back in the OPEN response — just save the one your bot finds easiest to track). Otherwise one strategy's CLOSE will close another strategy's open position. Partial close (close N of the open lots) is not supported on this endpoint.
 - **SL / TP** are optional; you can add/modify them from the dashboard later.
 - **`/account`** is read-only and safe to poll, but don't hammer it — once every few seconds is more than enough.
 - **Market data endpoints** (`/symbols`, `/price`, `/prices`, `/bars`) share the same auth headers as the trading endpoints — one key, everything.
