@@ -337,7 +337,9 @@ async def trade_history(
         copy_trade = copy_trade_q.scalar_one_or_none()
         trade_type = "copy_trade" if copy_trade else "self_trade"
         items.append({
-            "id": str(t.id), "symbol": t.instrument.symbol if t.instrument else None,
+            "id": str(t.id),
+            "account_id": str(t.account_id) if t.account_id else None,
+            "symbol": t.instrument.symbol if t.instrument else None,
             "side": side_val, "lots": float(t.lots),
             "open_price": float(t.open_price), "close_price": float(t.close_price),
             "swap": float(t.swap), "commission": float(t.commission),

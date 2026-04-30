@@ -57,6 +57,7 @@ interface PendingOrder {
 
 interface ClosedTrade {
   id: string;
+  account_id: string;
   symbol: string | null;
   side: string;
   lots: number;
