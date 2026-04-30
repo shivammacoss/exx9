@@ -49,20 +49,22 @@ Opens a market order instantly at the current price.
   "volume": 0.1,
   "sl": 4750,
   "tp": 4850,
-  "comment": "My EA v1"
+  "comment": "My EA v1",
+  "trade_id": 1001
 }
 ```
 
 ### Fields
 
-| Field     | Type   | Required | Description                                    |
-|-----------|--------|----------|------------------------------------------------|
-| `action`  | string | yes      | `"BUY"` or `"SELL"`                            |
-| `symbol`  | string | yes      | Instrument symbol, e.g. `"XAUUSD"`, `"EURUSD"` |
-| `volume`  | number | yes      | Lot size (min `0.01`)                          |
-| `sl`      | number | no       | Stop Loss price                                |
-| `tp`      | number | no       | Take Profit price                              |
-| `comment` | string | no       | Free-text tag on the trade                     |
+| Field      | Type    | Required | Description                                    |
+|------------|---------|----------|------------------------------------------------|
+| `action`   | string  | yes      | `"BUY"` or `"SELL"`                            |
+| `symbol`   | string  | yes      | Instrument symbol, e.g. `"XAUUSD"`, `"EURUSD"` |
+| `volume`   | number  | yes      | Lot size (min `0.01`)                          |
+| `sl`       | number  | no       | Stop Loss price                                |
+| `tp`       | number  | no       | Take Profit price                              |
+| `comment`  | string  | no       | Free-text tag on the trade                     |
+| `trade_id` | integer | no       | Strategy identifier. Tags the trade so a later `CLOSE` with the same `trade_id` only affects this strategy's positions. **Mandatory if you run multiple strategies on one API key** — see Section 3. |
 
 ### Success response (200)
 
@@ -83,9 +85,53 @@ Opens a market order instantly at the current price.
 
 ## 3. Close Positions (CLOSE)
 
-Closes **all open positions** for the given symbol on the linked account.
+`CLOSE` supports three filtering modes, picked by which optional field you send. Most-specific wins.
 
-### Request body
+| Mode             | Field sent     | Effect                                                                |
+|------------------|----------------|-----------------------------------------------------------------------|
+| Single position  | `position_id`  | Closes **only that one position** (use the `position_id` from the OPEN response). |
+| Per-strategy     | `trade_id`     | Closes **only positions whose `trade_id` matches**. Other strategies on the same account are untouched. |
+| Symbol-wide      | *(neither)*    | Closes **every open position on the symbol** for this account. Convenient for single-strategy bots, **dangerous if multiple strategies share one API key** — they'll wipe each other out. |
+
+### Fields
+
+| Field         | Type    | Required | Description                                                                 |
+|---------------|---------|----------|-----------------------------------------------------------------------------|
+| `action`      | string  | yes      | `"CLOSE"`                                                                   |
+| `symbol`      | string  | yes      | Instrument symbol                                                           |
+| `position_id` | string  | no       | Specific position UUID returned by an earlier OPEN (most precise close).    |
+| `trade_id`    | integer | no       | Same `trade_id` you used on OPEN — closes only that strategy's positions.   |
+
+### Multi-strategy example
+
+Strategy A and Strategy B both trade BTCUSD on the same account through the same API key. To prevent A's exit signal from killing B's position:
+
+- A opens with `"trade_id": 1001`, closes with `"trade_id": 1001` → only A's BTCUSD positions close.
+- B opens with `"trade_id": 1002`, closes with `"trade_id": 1002` → only B's BTCUSD positions close.
+
+**Without `trade_id` (or `position_id`)** the legacy "close everything for this symbol" behaviour kicks in — A's CLOSE will wipe B's open trade. Pick a different integer per strategy and you're safe (this is the same idea as MT5's magic number).
+
+### Request body — close one position by ID (most precise)
+
+```json
+{
+  "action": "CLOSE",
+  "symbol": "XAUUSD",
+  "position_id": "c0a8f9e2-6d4a-4b7f-9c1e-2a8b4d6e8f10"
+}
+```
+
+### Request body — close one strategy's positions by trade_id
+
+```json
+{
+  "action": "CLOSE",
+  "symbol": "XAUUSD",
+  "trade_id": 1001
+}
+```
+
+### Request body — close everything for a symbol (legacy, single-strategy only)
 
 ```json
 {
@@ -189,7 +235,7 @@ Error body format:
 
 ## 6. Example — cURL
 
-### BUY
+### BUY (single-strategy)
 
 ```bash
 curl -X POST https://api.trustedgefx.com/api/algo/trade \
@@ -199,7 +245,37 @@ curl -X POST https://api.trustedgefx.com/api/algo/trade \
   -d '{"action":"BUY","symbol":"XAUUSD","volume":0.1,"sl":4750,"tp":4850}'
 ```
 
-### CLOSE
+### BUY (multi-strategy — tag with `trade_id`)
+
+```bash
+curl -X POST https://api.trustedgefx.com/api/algo/trade \
+  -H "X-Api-Key: YOUR_KEY" \
+  -H "X-Api-Secret: YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"BUY","symbol":"BTCUSD","volume":0.5,"trade_id":1001}'
+```
+
+### CLOSE — only this strategy's positions
+
+```bash
+curl -X POST https://api.trustedgefx.com/api/algo/trade \
+  -H "X-Api-Key: YOUR_KEY" \
+  -H "X-Api-Secret: YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"CLOSE","symbol":"BTCUSD","trade_id":1001}'
+```
+
+### CLOSE — by exact position_id
+
+```bash
+curl -X POST https://api.trustedgefx.com/api/algo/trade \
+  -H "X-Api-Key: YOUR_KEY" \
+  -H "X-Api-Secret: YOUR_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"action":"CLOSE","symbol":"BTCUSD","position_id":"c0a8f9e2-6d4a-4b7f-9c1e-2a8b4d6e8f10"}'
+```
+
+### CLOSE — every position on this symbol (legacy, single-strategy)
 
 ```bash
 curl -X POST https://api.trustedgefx.com/api/algo/trade \
@@ -235,17 +311,35 @@ HEADERS = {
 r = requests.get(f"{BASE}/account", headers=HEADERS)
 print(r.status_code, r.json())
 
-# BUY
+# BUY — multi-strategy: tag every trade with a trade_id per strategy
+STRATEGY_A_ID = 1001  # any unique integer per strategy
 r = requests.post(f"{BASE}/trade", headers=HEADERS, json={
     "action": "BUY",
     "symbol": "XAUUSD",
     "volume": 0.1,
     "sl": 4750,
     "tp": 4850,
+    "trade_id": STRATEGY_A_ID,
 })
 print(r.status_code, r.json())
+position_id = r.json().get("position_id")  # save for precise close later
 
-# CLOSE
+# CLOSE — option 1: exact position by id (most precise, MT5 ticket-style)
+r = requests.post(f"{BASE}/trade", headers=HEADERS, json={
+    "action": "CLOSE",
+    "symbol": "XAUUSD",
+    "position_id": position_id,
+})
+
+# CLOSE — option 2: just this strategy's positions on the symbol
+r = requests.post(f"{BASE}/trade", headers=HEADERS, json={
+    "action": "CLOSE",
+    "symbol": "XAUUSD",
+    "trade_id": STRATEGY_A_ID,
+})
+
+# CLOSE — option 3 (legacy): every open position on the symbol
+# WARNING: if multiple strategies share this API key, this wipes ALL of them.
 r = requests.post(f"{BASE}/trade", headers=HEADERS, json={
     "action": "CLOSE",
     "symbol": "XAUUSD",
@@ -488,7 +582,7 @@ asyncio.run(stream())
 - **Symbol** is case-insensitive (`xauusd` = `XAUUSD`).
 - **Minimum lot**: `0.01`.
 - **Margin check**: a BUY/SELL is rejected if free margin is not enough — check `/account` first if you want to size trades dynamically.
-- **CLOSE** closes every open position for that symbol on the account — partial close is not supported on this endpoint.
+- **CLOSE** filters by `position_id` first, then `trade_id`, then falls back to "every open position on the symbol". If you run more than one strategy through one API key, **always pass `trade_id` (or `position_id`)** — otherwise one strategy's CLOSE will close another strategy's open position. Partial close (close N of the open lots) is not supported on this endpoint.
 - **SL / TP** are optional; you can add/modify them from the dashboard later.
 - **`/account`** is read-only and safe to poll, but don't hammer it — once every few seconds is more than enough.
 - **Market data endpoints** (`/symbols`, `/price`, `/prices`, `/bars`) share the same auth headers as the trading endpoints — one key, everything.
