@@ -1448,8 +1448,8 @@ function AccountCard({
             )}
           </div>
 
-          {/* Stats row — Balance | Equity | P&L | Leverage */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 sm:gap-x-6 gap-y-2 sm:gap-y-3">
+          {/* Stats row — Balance | Equity | P&L | Used Margin | Free Margin | Leverage */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-2 sm:gap-y-3">
             <div className="min-w-0">
               <p className="text-[10px] sm:text-[11px] text-text-tertiary font-medium mb-0.5">Balance</p>
               <p className="text-sm sm:text-lg font-bold text-text-primary tabular-nums font-mono truncate">{fmt(row.balance, row.currency)}</p>
@@ -1467,6 +1467,19 @@ function AccountCard({
               </div>
               <p className={clsx('text-[10px] sm:text-xs font-semibold tabular-nums', pnlPositive ? 'text-[#2196f3]/70' : 'text-red-400/70')}>
                 ({pnlPositive ? '+' : ''}{pct.toFixed(2)}%)
+              </p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-text-tertiary font-medium mb-0.5">Used Margin</p>
+              <p className="text-sm sm:text-lg font-bold text-text-primary tabular-nums font-mono truncate">{fmt(row.margin_used, row.currency)}</p>
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-[11px] text-text-tertiary font-medium mb-0.5">Free Margin</p>
+              <p className={clsx(
+                'text-sm sm:text-lg font-bold tabular-nums font-mono truncate',
+                Number(row.free_margin) <= 0 ? 'text-red-400' : 'text-text-primary',
+              )}>
+                {fmt(row.free_margin, row.currency)}
               </p>
             </div>
             <div className="min-w-0">
