@@ -620,7 +620,15 @@ async def list_positions(account_id: UUID, user_id: UUID, status: str, db: Async
             select(CopyTrade).where(CopyTrade.investor_position_id == pos.id)
         )
         copy_trade = copy_trade_q.scalar_one_or_none()
-        trade_type = "copy_trade" if copy_trade else "self_trade"
+        if copy_trade:
+            trade_type = "copy_trade"
+        elif pos.comment and str(pos.comment).startswith("Algo ["):
+            # Algo connector tags every position it opens with this prefix
+            # (see api/algo_connector.py). Lets the UI render an Algo badge so
+            # the master can tell bot trades apart from manual ones at a glance.
+            trade_type = "algo_trade"
+        else:
+            trade_type = "self_trade"
 
         pos_status_val = pos.status.value if hasattr(pos.status, 'value') else str(pos.status)
         response.append({

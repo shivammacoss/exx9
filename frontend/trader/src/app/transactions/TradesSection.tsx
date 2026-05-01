@@ -99,11 +99,16 @@ function closeReasonBadge(
   return { label: 'Manual', className: 'bg-text-tertiary/15 text-text-tertiary border border-border-primary' };
 }
 
-/** Distinguish real (self-placed) trades from MAM/PAMM mirrored trades. */
+/** Distinguish trade sources: Algo bot, MAM/PAMM mirror, vs self-placed Real trades. */
 function tradeSourceBadge(tradeType: string | null | undefined, accountNumber?: string): { label: string; className: string } {
   const t = (tradeType || '').toLowerCase();
-  // Backend tags: self_trade = user placed it, copy_trade = mirrored from master.
-  // Legacy rows may have no trade_type — infer from account prefix (CF/IF = investor sub-account).
+  // Backend tags: self_trade = user placed it manually, copy_trade = mirrored
+  // from master, algo_trade = placed by external bot via /api/algo. Legacy
+  // rows without trade_type fall back to account-prefix inference (CF/IF =
+  // investor sub-account = MAM mirror).
+  if (t === 'algo_trade' || t === 'algo') {
+    return { label: 'Algo', className: 'bg-warning/15 text-warning border border-warning/30' };
+  }
   const acct = (accountNumber || '').toUpperCase();
   const looksInvestor = acct.startsWith('CF') || acct.startsWith('IF');
   if (t === 'copy_trade' || t === 'mam' || t === 'pamm' || looksInvestor) {

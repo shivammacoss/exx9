@@ -70,6 +70,17 @@ interface PortfolioSummary {
 
   }>;
 
+  open_positions?: Array<{
+    id: string;
+    symbol: string;
+    side: string;
+    lots: number;
+    entry_price?: number;
+    open_price?: number;
+    current_price: number;
+    pnl: number;
+  }>;
+
   open_positions_count: number;
 
 }
@@ -459,7 +470,26 @@ function PortfolioPageContent() {
 
 
 
-  const holdings = summary?.holdings ?? [];
+  // Show every individual open position — the per-symbol netted "holdings"
+  // view hid the fact that 88 trades were live, so users assumed only one
+  // position existed. Each row is now one trade.
+  const holdings = (summary?.open_positions ?? []).map((p: any) => ({
+    symbol: p.symbol,
+    side: p.side,
+    lots: p.lots,
+    entry_price: p.entry_price ?? p.open_price,
+    current_price: p.current_price,
+    pnl: p.pnl,
+    pnl_pct: (() => {
+      const entry = Number(p.entry_price ?? p.open_price ?? 0);
+      const lots = Number(p.lots ?? 0);
+      const pnl = Number(p.pnl ?? 0);
+      const notional = entry * lots;
+      return notional > 0 ? (pnl / notional) * 100 : 0;
+    })(),
+    positions_count: 1,
+    _pos_id: p.id,
+  }));
 
   const dashboardData = useMemo(() => {
     if (!summary) return null;

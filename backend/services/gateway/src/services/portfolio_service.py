@@ -335,7 +335,22 @@ async def trade_history(
             select(CopyTrade).where(CopyTrade.investor_position_id == t.position_id)
         )
         copy_trade = copy_trade_q.scalar_one_or_none()
-        trade_type = "copy_trade" if copy_trade else "self_trade"
+        if copy_trade:
+            trade_type = "copy_trade"
+        else:
+            # Algo bot tags every position with "Algo [<key label>]" comment
+            # (api/algo_connector.py). Closed trades pull the source by
+            # following position_id back to positions.comment.
+            pos_comment = None
+            if t.position_id:
+                pc_q = await db.execute(
+                    select(Position.comment).where(Position.id == t.position_id)
+                )
+                pos_comment = pc_q.scalar_one_or_none()
+            if pos_comment and str(pos_comment).startswith("Algo ["):
+                trade_type = "algo_trade"
+            else:
+                trade_type = "self_trade"
         items.append({
             "id": str(t.id),
             "account_id": str(t.account_id) if t.account_id else None,
