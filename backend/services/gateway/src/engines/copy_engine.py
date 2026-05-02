@@ -221,58 +221,72 @@ class CopyTradeEngine:
         tripped. Once tripped, the allocation stays tripped until the investor
         manually resets it from the accounts page.
 
+        Self-healing: even when the allocation is already tripped, we re-scan
+        for any mirrors that are still open (e.g. an earlier close attempt
+        failed silently due to a transient DB error or a now-fixed schema
+        constraint) and retry the close every cycle until none remain.
+
         Returns True if the allocation is currently tripped (caller must skip
         opening any new copies for it this cycle).
         """
-        if investor.drawdown_tripped:
-            return True
-
         max_dd = investor.max_drawdown_pct
-        if max_dd is None or float(max_dd) <= 0:
-            return False
+        enabled = max_dd is not None and float(max_dd) > 0
 
-        if not investor.investor_account_id:
-            return False
+        if not investor.drawdown_tripped:
+            # Not yet tripped → only check threshold if protection is on
+            if not enabled:
+                return False
+            if not investor.investor_account_id:
+                return False
+            baseline = float(investor.allocation_amount or 0)
+            if baseline <= 0:
+                return False
+            investor_account = await db.get(TradingAccount, investor.investor_account_id)
+            if not investor_account:
+                return False
+            current_equity = float(investor_account.equity or investor_account.balance or 0)
+            loss = baseline - current_equity
+            if loss <= 0:
+                return False
+            loss_pct = (loss / baseline) * 100.0
+            if loss_pct < float(max_dd):
+                return False
+            logger.warning(
+                "Drawdown limit hit: allocation=%s loss_pct=%.2f%% >= max=%.2f%% — force-closing mirrors",
+                investor.id, loss_pct, float(max_dd),
+            )
+            investor.drawdown_tripped = True
+            investor.drawdown_tripped_at = datetime.now(timezone.utc)
 
-        baseline = float(investor.allocation_amount or 0)
-        if baseline <= 0:
-            return False
-
-        investor_account = await db.get(TradingAccount, investor.investor_account_id)
-        if not investor_account:
-            return False
-
-        current_equity = float(investor_account.equity or investor_account.balance or 0)
-        loss = baseline - current_equity
-        if loss <= 0:
-            return False
-
-        loss_pct = (loss / baseline) * 100.0
-        if loss_pct < float(max_dd):
-            return False
-
-        logger.warning(
-            "Drawdown limit hit: allocation=%s loss_pct=%.2f%% >= max=%.2f%% — force-closing mirrors",
-            investor.id, loss_pct, float(max_dd),
-        )
-
+        # Force-close any mirrors that are still open. Runs every cycle while
+        # tripped so a previous silent failure gets retried until the account
+        # is fully cleaned out.
         open_copies_q = await db.execute(
             select(CopyTrade).where(
                 CopyTrade.investor_allocation_id == investor.id,
                 CopyTrade.status == "open",
             )
         )
-        for copy in open_copies_q.scalars().all():
-            try:
-                await self._close_copy(copy, master, db)
-            except Exception as e:
-                logger.error(
-                    "Drawdown force-close failed: copy=%s allocation=%s err=%s",
-                    copy.id, investor.id, e,
-                )
+        open_copies = open_copies_q.scalars().all()
+        if open_copies:
+            logger.warning(
+                "Drawdown force-close: %d open mirror(s) remaining for allocation=%s",
+                len(open_copies), investor.id,
+            )
+            for copy in open_copies:
+                # Per-copy savepoint so one bad close doesn't poison the wider
+                # session and abort every subsequent close in the loop.
+                sp = await db.begin_nested()
+                try:
+                    await self._close_copy(copy, master, db)
+                    await sp.commit()
+                except Exception as e:
+                    await sp.rollback()
+                    logger.error(
+                        "Drawdown force-close failed (will retry next cycle): copy=%s allocation=%s err=%s",
+                        copy.id, investor.id, e,
+                    )
 
-        investor.drawdown_tripped = True
-        investor.drawdown_tripped_at = datetime.now(timezone.utc)
         return True
 
     async def process_master(self, master: MasterAccount, db: AsyncSession) -> None:
