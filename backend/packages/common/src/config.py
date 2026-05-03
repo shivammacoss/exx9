@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # HttpOnly auth cookies (trader web). Secure derived from request HTTPS unless overridden.
     ACCESS_TOKEN_COOKIE_NAME: str = "pt_access"
     REFRESH_TOKEN_COOKIE_NAME: str = "pt_refresh"
-    COOKIE_SAMESITE: str = "strict"  # lax | strict | none
+    COOKIE_SAMESITE: str = "lax"  # lax | strict | none  (lax required for Google OAuth redirect)
     # If None, Secure flag follows the incoming request (HTTPS / X-Forwarded-Proto).
     COOKIE_SECURE: bool | None = None
 
