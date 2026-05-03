@@ -126,10 +126,28 @@ async function proxy(req: NextRequest, segments: string[]): Promise<NextResponse
     );
   }
 
-  // If gateway returned a redirect (307/308), follow it manually preserving body + auth.
+  // If gateway returned a redirect, decide whether to follow server-side or
+  // pass through to the browser. OAuth / external redirects MUST reach the
+  // browser so the user can navigate to the consent screen.
   if ([301, 302, 307, 308].includes(res.status)) {
     const location = res.headers.get('location');
     if (location) {
+      // External redirects (different origin, e.g. Google OAuth) → pass to browser.
+      const isExternal = /^https?:\/\//i.test(location) &&
+        !location.startsWith(gatewayOrigin());
+      if (isExternal) {
+        const redirectOut = new Headers();
+        redirectOut.set('location', location);
+        // Forward Set-Cookie from gateway (e.g. OAuth state cookie).
+        const sc = typeof res.headers.getSetCookie === 'function' ? res.headers.getSetCookie() : [];
+        for (const c of sc) redirectOut.append('set-cookie', c);
+        if (sc.length === 0) {
+          const single = res.headers.get('set-cookie');
+          if (single) redirectOut.append('set-cookie', single);
+        }
+        return new NextResponse(null, { status: res.status, headers: redirectOut });
+      }
+      // Internal redirects (e.g. trailing-slash 307) → follow server-side.
       try {
         const redirectUrl = new URL(location, targetUrl).toString();
         res = await fetch(redirectUrl, { method, headers, body, redirect: 'manual' });
