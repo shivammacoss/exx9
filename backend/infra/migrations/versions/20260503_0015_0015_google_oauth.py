@@ -6,14 +6,14 @@ claim (unique per Google account) for re-login matching, and auth_provider
 records the signup origin (`local` or `google`) for analytics + future
 providers.
 
-Revision ID: 0014
-Revises: 0013
+Revision ID: 0015
+Revises: 0014
 """
 from alembic import op
 
 
-revision = "0014"
-down_revision = "0013"
+revision = "0015"
+down_revision = "0014"
 branch_labels = None
 depends_on = None
 
