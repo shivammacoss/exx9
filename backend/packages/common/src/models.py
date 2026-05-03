@@ -67,7 +67,12 @@ class User(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     phone = Column(String(20))
-    password_hash = Column(String(255), nullable=False)
+    # Nullable so OAuth-only users (Google sign-in) exist without a password.
+    # Local-credential users must still have a hash; the registration path
+    # enforces that — the column itself is permissive.
+    password_hash = Column(String(255), nullable=True)
+    google_id = Column(String(64), unique=True, nullable=True, index=True)
+    auth_provider = Column(String(16), default="local", server_default="local", nullable=False)
     first_name = Column(String(100))
     last_name = Column(String(100))
     date_of_birth = Column(DateTime)

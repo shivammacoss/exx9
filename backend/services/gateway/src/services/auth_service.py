@@ -282,7 +282,16 @@ async def login_user(
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
 
-    if not user or not verify_password(password, user.password_hash):
+    if not user:
+        raise AuthServiceError("Invalid credentials", 401)
+    if not user.password_hash:
+        # OAuth-only account (no local password). Tell the user explicitly
+        # so they don't keep guessing at a password that doesn't exist.
+        raise AuthServiceError(
+            "This account uses Google sign-in. Click 'Continue with Google' to sign in.",
+            401,
+        )
+    if not verify_password(password, user.password_hash):
         raise AuthServiceError("Invalid credentials", 401)
 
     if user.status == "banned":

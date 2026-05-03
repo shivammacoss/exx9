@@ -100,6 +100,14 @@ class Settings(BaseSettings):
     # Request body size limit (bytes) — 10 MB default
     MAX_REQUEST_SIZE: int = 10 * 1024 * 1024
 
+    # Google OAuth ("Sign in with Google"). Leave creds blank to disable —
+    # /auth/google/status reports the runtime state so the frontend hides the
+    # button when not configured. The redirect URI must match what's registered
+    # in the Google Cloud Console for this OAuth client.
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GOOGLE_OAUTH_REDIRECT_URI: str = ""  # e.g. https://api.trustedgefx.com/api/v1/auth/google/callback
+
     # OxaPay crypto payment gateway
     OXAPAY_MERCHANT_KEY: str = ""
     OXAPAY_SANDBOX: bool = False

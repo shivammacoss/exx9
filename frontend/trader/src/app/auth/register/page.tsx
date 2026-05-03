@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import toast from 'react-hot-toast';
+import GoogleSignInButton from '../GoogleSignInButton';
 import '../auth.css';
 
 /* ── animation helpers ── */
@@ -288,7 +289,17 @@ function RegisterContent() {
                     </button>
                   </motion.div>
 
-                  <motion.p className="auth-footer" {...fadeUp(0.78)}>
+                  <motion.div {...fadeUp(0.76)} className="auth-divider">
+                    <span className="auth-divider__line" />
+                    <span className="auth-divider__text">or</span>
+                    <span className="auth-divider__line" />
+                  </motion.div>
+
+                  <motion.div {...fadeUp(0.78)}>
+                    <GoogleSignInButton label="Sign up with Google" />
+                  </motion.div>
+
+                  <motion.p className="auth-footer" {...fadeUp(0.82)}>
                     Already have an account?{' '}
                     <a onClick={() => router.push('/auth/login')}>Log in</a>
                   </motion.p>

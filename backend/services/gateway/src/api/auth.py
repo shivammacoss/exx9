@@ -167,6 +167,51 @@ async def change_password(
         raise HTTPException(status_code=e.status_code, detail=e.detail)
 
 
+@router.get("/google/status")
+async def google_status():
+    """Public — frontend checks this on render to decide whether to show the
+    Google sign-in button. Avoids a dead button when env creds are unset."""
+    from ..services.google_oauth_service import is_enabled
+    return {"enabled": is_enabled()}
+
+
+@router.get("/google/login")
+async def google_login(request: Request):
+    """302 the browser to Google's consent screen with a CSRF state cookie set."""
+    from ..services.google_oauth_service import build_login_redirect
+    try:
+        return build_login_redirect(request)
+    except AuthServiceError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.detail)
+
+
+@router.get("/google/callback")
+async def google_callback(
+    request: Request,
+    code: str | None = None,
+    state: str | None = None,
+    error: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    """Final hop in the OAuth dance — Google sends the user back here with
+    `?code` (success) or `?error` (denied). On success this issues auth
+    cookies and 302s to the trader app's accounts page."""
+    from fastapi.responses import RedirectResponse
+    from packages.common.src.config import get_settings
+    from ..services.google_oauth_service import handle_callback
+
+    if error:
+        # User denied consent or Google returned an error — bounce back to
+        # the login page with a query param the frontend can surface.
+        target = (get_settings().TRADER_APP_URL or "/").rstrip("/") + f"/auth/login?google_error={error}"
+        return RedirectResponse(target, status_code=302)
+    try:
+        return await handle_callback(code=code, state=state, request=request, db=db)
+    except AuthServiceError as e:
+        target = (get_settings().TRADER_APP_URL or "/").rstrip("/") + f"/auth/login?google_error={e.detail.replace(' ', '_')}"
+        return RedirectResponse(target, status_code=302)
+
+
 @router.post("/logout")
 async def logout(
     request: Request, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db),

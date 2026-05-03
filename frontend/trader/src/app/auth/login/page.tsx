@@ -9,6 +9,7 @@ import { AlertTriangle, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { usePlatformStatusStore } from '@/stores/platformStatusStore';
 import toast from 'react-hot-toast';
+import GoogleSignInButton from '../GoogleSignInButton';
 import '../auth.css';
 
 /* ── animation helpers ── */
@@ -314,7 +315,17 @@ export default function LoginPage() {
                       </button>
                     </motion.div>
 
-                    <motion.p className="auth-footer" {...fadeUp(0.62)}>
+                    <motion.div {...fadeUp(0.6)} className="auth-divider">
+                      <span className="auth-divider__line" />
+                      <span className="auth-divider__text">or</span>
+                      <span className="auth-divider__line" />
+                    </motion.div>
+
+                    <motion.div {...fadeUp(0.62)}>
+                      <GoogleSignInButton disabled={maintenance} />
+                    </motion.div>
+
+                    <motion.p className="auth-footer" {...fadeUp(0.66)}>
                       Don&apos;t have an account?{' '}
                       <a onClick={() => handleStepClick(3)}>Sign Up</a>
                     </motion.p>
