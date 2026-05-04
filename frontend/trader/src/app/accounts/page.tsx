@@ -1162,17 +1162,22 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
     }
   }, [accountId]);
 
+  // Fetch on mount regardless of card-expanded state so a tripped follower
+  // sees the alert on a collapsed card too — important on mobile where users
+  // often don't tap to expand.
   useEffect(() => {
-    if (!isOpen) return;
     if (fetchedOnceRef.current) return;
     fetchedOnceRef.current = true;
     void refresh();
-  }, [isOpen, refresh]);
+  }, [refresh]);
 
-  // Auto-refresh tripped/drawdown state every 15s while card is expanded so
-  // the user sees the limit fire without manual reload.
+  // Auto-refresh tripped/drawdown state every 15s. Skip the background poll
+  // for collapsed, off-state cards to avoid hammering the API on the accounts
+  // list — once the card is opened or protection is active/tripped we keep
+  // it live.
   useEffect(() => {
-    if (!isOpen || !risk) return;
+    if (!risk) return;
+    if (!isOpen && !risk.tripped && !risk.enabled) return;
     const t = setInterval(refresh, 15000);
     return () => clearInterval(t);
   }, [isOpen, risk, refresh]);
@@ -1205,7 +1210,8 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
     try {
       const data = await api.post<RiskState>(`/social/account-risk/${accountId}/reset`, {});
       setRisk(data);
-      toast.success('Copy trading resumed');
+      setDraftEnabled(false);
+      toast.success('Copy trading resumed. Set a new loss limit if you want protection back on.');
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Could not reset');
     } finally {
@@ -1213,8 +1219,11 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
     }
   };
 
-  if (!isOpen) return null;
+  // Only render the loading placeholder when the card is expanded — on a
+  // collapsed card the panel should stay invisible until we know there's
+  // something to surface (tripped/enabled).
   if (loading && !risk) {
+    if (!isOpen) return null;
     return (
       <div className="rounded-xl border border-border-primary bg-bg-secondary p-4 mt-4">
         <div className="text-xs text-text-tertiary">Loading loss protection...</div>
@@ -1222,6 +1231,10 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
     );
   }
   if (!risk) return null;
+  // Collapsed card + protection idle → keep the card compact. Tripped or
+  // active state always renders (so mobile users see the alert without
+  // having to tap to expand the card).
+  if (!isOpen && !risk.tripped && !risk.enabled) return null;
 
   const tripped = risk.tripped;
   const headerIcon = tripped
@@ -1498,6 +1511,16 @@ function AccountCard({
         </button>
       </div>
 
+      {/* Loss protection — MAM follower (CF) sub-accounts only. Lives outside
+          the expanded section so a tripped follower sees the alert and the
+          Reset & Resume button on a collapsed card too (mobile users rarely
+          tap to expand). The panel hides itself when protection is idle. */}
+      {row.account_number.startsWith('CF') && (
+        <div className="px-3 sm:px-5 md:px-6 pb-3 sm:pb-4">
+          <RiskProtectionPanel accountId={row.id} isOpen={open} />
+        </div>
+      )}
+
       {/* ── Expanded Section ── */}
       {open && (
         <div className="px-3 sm:px-5 md:px-6 pb-4 sm:pb-5 pt-0" style={{ borderTop: '1px solid var(--border-primary)' }}>
@@ -1536,11 +1559,6 @@ function AccountCard({
               </div>
             </div>
           </div>
-
-          {/* Loss protection — only on MAM follower (CF) sub-accounts */}
-          {row.account_number.startsWith('CF') && (
-            <RiskProtectionPanel accountId={row.id} isOpen={open} />
-          )}
 
           {/* Action buttons row */}
           <div className="relative z-[60] flex flex-wrap items-center gap-2 pt-4 sm:pt-5 mt-4 sm:mt-5" style={{ borderTop: '1px solid var(--border-primary)' }}>

@@ -4,7 +4,7 @@ import { Suspense, useState, useEffect, useCallback, useMemo } from 'react';
 
 import Link from 'next/link';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 import { clsx } from 'clsx';
 
@@ -79,6 +79,8 @@ interface PortfolioSummary {
     open_price?: number;
     current_price: number;
     pnl: number;
+    account_id?: string | null;
+    account_number?: string | null;
   }>;
 
   open_positions_count: number;
@@ -116,6 +118,10 @@ interface PerformanceData {
 interface Trade {
 
   id: string;
+
+  account_id?: string | null;
+
+  account_number?: string | null;
 
   symbol: string;
 
@@ -209,17 +215,20 @@ function parseAccountId(raw: string | null): string | null {
   return UUID_RE.test(raw) ? raw : null;
 }
 
+interface AccountOption {
+  id: string;
+  account_number: string;
+  is_demo?: boolean;
+}
+
 function PortfolioPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const queryKey = searchParams.toString();
 
   const validAccountId = useMemo(() => {
     return parseAccountId(new URLSearchParams(queryKey).get('account_id'));
-  }, [queryKey]);
-
-  const accountNoLabel = useMemo(() => {
-    const v = new URLSearchParams(queryKey).get('account_no');
-    return v?.trim() ? v.trim() : '';
   }, [queryKey]);
 
   const [tf, setTf] = useState('1M');
@@ -247,6 +256,47 @@ function PortfolioPageContent() {
 
 
   const [allTrades, setAllTrades] = useState<Trade[]>([]);
+
+  const [accountOptions, setAccountOptions] = useState<AccountOption[]>([]);
+
+  // One-shot fetch of the user's account list so the selector can render
+  // labels and the URL-driven filter has a known set of valid ids. Failures
+  // are non-fatal — the rest of the page still works without the dropdown.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await api.get<{ items?: AccountOption[] }>('/accounts');
+        if (cancelled) return;
+        const items = (res?.items ?? []).map((a) => ({
+          id: a.id,
+          account_number: a.account_number,
+          is_demo: a.is_demo,
+        }));
+        setAccountOptions(items);
+      } catch {
+        /* selector simply won't render — non-fatal */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Switch the URL filter without losing other query params (tab, etc.).
+  // Empty string == "All accounts" → strips account_id+account_no.
+  const handleAccountChange = useCallback((nextId: string) => {
+    const params = new URLSearchParams(queryKey);
+    if (nextId) {
+      const opt = accountOptions.find((a) => a.id === nextId);
+      params.set('account_id', nextId);
+      if (opt?.account_number) params.set('account_no', opt.account_number);
+      else params.delete('account_no');
+    } else {
+      params.delete('account_id');
+      params.delete('account_no');
+    }
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [queryKey, accountOptions, router, pathname]);
 
   const fetchData = useCallback(async () => {
 
@@ -489,7 +539,14 @@ function PortfolioPageContent() {
     })(),
     positions_count: 1,
     _pos_id: p.id,
+    account_id: p.account_id ?? null,
+    account_number: p.account_number ?? null,
   }));
+
+  // Show the per-row account label only when looking at the aggregated view —
+  // when a single account is already filtered, the column would just repeat
+  // the same number on every row.
+  const showAccountColumn = !validAccountId;
 
   const dashboardData = useMemo(() => {
     if (!summary) return null;
@@ -591,23 +648,29 @@ function PortfolioPageContent() {
           </div>
         ) : null}
 
-        {validAccountId ? (
-          <div className="rounded-xl border border-[#2196f3]/30 bg-[#2196f3]/10 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#2196f3]">Account scope</p>
-              <p className="text-sm text-text-primary mt-0.5">
-                Journal and trade list for{' '}
-                <span className="font-mono font-semibold">
-                  {accountNoLabel ? `#${accountNoLabel}` : validAccountId.slice(0, 8) + '…'}
-                </span>
+        {accountOptions.length > 0 ? (
+          <div className="rounded-xl border border-border-glass bg-bg-secondary/40 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-text-tertiary">Account</p>
+              <p className="text-xs text-text-tertiary mt-0.5">
+                {validAccountId
+                  ? 'Showing positions and trades for this account only.'
+                  : 'Showing all accounts combined — pick one to isolate it.'}
               </p>
             </div>
-            <Link
-              href="/portfolio"
-              className="text-xs font-semibold text-[#2196f3] hover:text-[#1976d2] underline underline-offset-2 shrink-0"
+            <select
+              value={validAccountId ?? ''}
+              onChange={(e) => handleAccountChange(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono outline-none focus:border-[#2196f3]/40 max-w-full"
+              aria-label="Filter by account"
             >
-              View all accounts
-            </Link>
+              <option value="">All accounts</option>
+              {accountOptions.map((a) => (
+                <option key={a.id} value={a.id}>
+                  #{a.account_number}{a.is_demo ? ' (Demo)' : ''}
+                </option>
+              ))}
+            </select>
           </div>
         ) : null}
 
@@ -653,6 +716,9 @@ function PortfolioPageContent() {
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-text-primary">{h.symbol}</span>
                         <span className={clsx('text-[10px] font-bold uppercase', h.side?.toLowerCase() === 'buy' ? 'text-buy' : 'text-sell')}>{h.side}</span>
+                        {showAccountColumn && h.account_number ? (
+                          <span className="text-[9px] font-mono text-text-tertiary px-1.5 py-0.5 rounded bg-bg-hover/50 border border-border-glass/40">#{h.account_number}</span>
+                        ) : null}
                       </div>
                       <div className="text-right">
                         <span className={clsx('text-sm font-mono font-semibold tabular-nums', h.pnl >= 0 ? 'text-buy' : 'text-sell')}>
@@ -684,6 +750,10 @@ function PortfolioPageContent() {
 
                   <tr className="border-b border-border-glass">
 
+                    {showAccountColumn ? (
+                      <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Account</th>
+                    ) : null}
+
                     <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Symbol</th>
 
                     <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Side</th>
@@ -706,7 +776,7 @@ function PortfolioPageContent() {
 
                     <tr>
 
-                      <td colSpan={6} className="px-4 py-8 text-center text-sm text-text-tertiary">
+                      <td colSpan={showAccountColumn ? 7 : 6} className="px-4 py-8 text-center text-sm text-text-tertiary">
 
                         No open positions
 
@@ -719,6 +789,10 @@ function PortfolioPageContent() {
                     holdings.map((h, i) => (
 
                       <tr key={i} className="border-b border-border-glass/50 hover:bg-bg-hover/30 transition-all">
+
+                        {showAccountColumn ? (
+                          <td className="px-4 py-3 text-text-tertiary text-xs font-mono">{h.account_number ? `#${h.account_number}` : '—'}</td>
+                        ) : null}
 
                         <td className="px-4 py-3 text-text-primary text-xs font-semibold">{h.symbol}</td>
 
@@ -836,6 +910,9 @@ function PortfolioPageContent() {
                             <span className="text-sm font-semibold text-text-primary">{t.symbol}</span>
                             <span className={clsx('text-[10px] font-bold uppercase', t.side?.toLowerCase() === 'buy' ? 'text-buy' : 'text-sell')}>{t.side}</span>
                             <span className={clsx('inline-flex text-[9px] font-semibold px-1.5 py-0.5 rounded-md border', ex.className)}>{ex.text}</span>
+                            {showAccountColumn && t.account_number ? (
+                              <span className="text-[9px] font-mono text-text-tertiary px-1.5 py-0.5 rounded bg-bg-hover/50 border border-border-glass/40">#{t.account_number}</span>
+                            ) : null}
                           </div>
                           <span className={clsx('text-sm font-mono font-semibold tabular-nums', t.pnl >= 0 ? 'text-buy' : 'text-sell')}>
                             {t.pnl >= 0 ? '+' : ''}{fmt(t.pnl)}
@@ -863,6 +940,10 @@ function PortfolioPageContent() {
 
                       <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Date</th>
 
+                      {showAccountColumn ? (
+                        <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Account</th>
+                      ) : null}
+
                       <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Symbol</th>
 
                       <th className="px-4 py-3 text-left text-xs text-text-tertiary font-medium">Side</th>
@@ -885,7 +966,7 @@ function PortfolioPageContent() {
 
                       <tr>
 
-                        <td colSpan={7} className="px-4 py-8 text-center text-sm text-text-tertiary">
+                        <td colSpan={showAccountColumn ? 8 : 7} className="px-4 py-8 text-center text-sm text-text-tertiary">
 
                           No trade history
 
@@ -904,6 +985,10 @@ function PortfolioPageContent() {
                             {new Date(t.close_time || t.open_time).toLocaleString()}
 
                           </td>
+
+                          {showAccountColumn ? (
+                            <td className="px-4 py-3 text-text-tertiary text-xs font-mono">{t.account_number ? `#${t.account_number}` : '—'}</td>
+                          ) : null}
 
                           <td className="px-4 py-3 text-text-primary text-xs font-semibold">{t.symbol}</td>
 

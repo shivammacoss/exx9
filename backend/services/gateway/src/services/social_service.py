@@ -1476,12 +1476,20 @@ async def update_account_risk(
 async def reset_account_risk(
     investor_account_id: UUID, user_id: UUID, db: AsyncSession,
 ) -> dict:
-    """Clear the tripped flag so copy trading resumes — limit value is preserved.
-    Investor is expected to call this after deciding to keep trading despite the
-    earlier drawdown breach (e.g. after topping up the account)."""
+    """Clear the tripped flag so copy trading resumes.
+
+    Also clears max_drawdown_pct. Reason: the threshold is measured against
+    the original deposit, so right after a trip the live equity is still
+    below the limit — keeping the limit set would cause the copy engine to
+    immediately re-trip on the next cycle and the user perceives Reset &
+    Resume as broken. Clearing the limit means the user must consciously
+    re-arm protection (with a fresh value relative to current equity) after
+    deciding to keep trading.
+    """
     alloc = await _resolve_allocation_for_account(investor_account_id, user_id, db)
     alloc.drawdown_tripped = False
     alloc.drawdown_tripped_at = None
+    alloc.max_drawdown_pct = None
     await db.commit()
     await db.refresh(alloc)
     dd = await _compute_current_drawdown(alloc, db)

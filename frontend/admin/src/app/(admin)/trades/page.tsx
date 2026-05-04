@@ -128,6 +128,51 @@ function TableSkeleton({ cols }: { cols: number }) {
 
 type Tick = { bid: number; ask: number };
 
+/** Resolve the gateway WebSocket origin (`wss://host` or `ws://host`).
+ *
+ * Order:
+ *   1. NEXT_PUBLIC_WS_URL              (explicit override)
+ *   2. NEXT_PUBLIC_GATEWAY_URL         (REST gateway URL — http(s) → ws(s))
+ *   3. Same-origin fallback            (only useful if nginx on the admin
+ *                                       host happens to proxy /ws/ to the
+ *                                       gateway; the production deploy does
+ *                                       NOT, hence the env vars above).
+ *   4. ws://localhost:8000             (last-resort dev default)
+ *
+ * Always upgrades ws:// → wss:// when the page itself is HTTPS so the browser
+ * doesn't block the connection as mixed content. */
+function resolveWsBaseUrl(): string {
+  const rawWs = process.env.NEXT_PUBLIC_WS_URL?.trim();
+  const rawGw = process.env.NEXT_PUBLIC_GATEWAY_URL?.trim();
+  const pageIsHttps =
+    typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+  const toWs = (u: URL): string => {
+    const wantWss =
+      pageIsHttps || u.protocol === 'https:' || u.protocol === 'wss:';
+    return `${wantWss ? 'wss:' : 'ws:'}//${u.host}`;
+  };
+
+  if (rawWs) {
+    try {
+      return toWs(new URL(rawWs.includes('://') ? rawWs : `wss://${rawWs}`));
+    } catch {
+      return rawWs.replace(/\/$/, '');
+    }
+  }
+  if (rawGw) {
+    try {
+      return toWs(new URL(rawGw.includes('://') ? rawGw : `https://${rawGw}`));
+    } catch {
+      /* fall through */
+    }
+  }
+  if (typeof window !== 'undefined') {
+    return `${pageIsHttps ? 'wss:' : 'ws:'}//${window.location.host}`;
+  }
+  return 'ws://localhost:8000';
+}
+
 export default function TradesPage() {
   const [activeTab, setActiveTab] = useState<TabId>('open');
   const [searchFilter, setSearchFilter] = useState('');
@@ -155,7 +200,13 @@ export default function TradesPage() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    const wsUrl = (process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8000').replace('http', 'ws');
+    // Resolve gateway WS origin. Admin domain (admin.trustedgefx.com) does NOT
+    // proxy /ws/ — that lives on api.trustedgefx.com — so operators must point
+    // us there via NEXT_PUBLIC_WS_URL or NEXT_PUBLIC_GATEWAY_URL. Prior code
+    // defaulted to ws://localhost:8000 which silently failed in production
+    // (mixed-content block on HTTPS + unreachable host) and left the Current /
+    // Spread / live P&L columns showing "—".
+    const wsUrl = resolveWsBaseUrl();
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout>;
 
@@ -164,8 +215,12 @@ export default function TradesPage() {
       ws.onmessage = (e) => {
         try {
           const data = JSON.parse(e.data);
-          if (data.symbol && data.bid && data.ask) {
-            pricesRef.current[data.symbol] = { bid: parseFloat(data.bid), ask: parseFloat(data.ask) };
+          // Server also sends {type:"ping"} keepalives — those have no symbol.
+          if (!data.symbol) return;
+          const bid = parseFloat(data.bid);
+          const ask = parseFloat(data.ask);
+          if (Number.isFinite(bid) && Number.isFinite(ask)) {
+            pricesRef.current[data.symbol] = { bid, ask };
           }
         } catch {}
       };

@@ -65,6 +65,12 @@ async def portfolio_summary(user_id: UUID, account_id: UUID | None, db: AsyncSes
             raise HTTPException(status_code=404, detail="Account not found")
         account_ids = [account_id]
 
+    # Map account_id → account_number so the UI can label each open position /
+    # trade with the account it belongs to (essential when the user views an
+    # aggregated portfolio across live + MAM-follower sub-accounts and wants
+    # to tell the rows apart).
+    acct_number_by_id = {a.id: a.account_number for a in accounts}
+
     total_balance = sum(float(a.balance) for a in accounts if a.id in account_ids)
     total_credit = sum(float(a.credit) for a in accounts if a.id in account_ids)
 
@@ -96,6 +102,8 @@ async def portfolio_summary(user_id: UUID, account_id: UUID | None, db: AsyncSes
             "id": str(pos.id), "symbol": symbol, "side": side_val,
             "lots": float(pos.lots), "entry_price": float(pos.open_price),
             "current_price": float(cp), "pnl": float(pnl),
+            "account_id": str(pos.account_id) if pos.account_id else None,
+            "account_number": acct_number_by_id.get(pos.account_id),
         })
 
         if symbol not in holdings:
@@ -269,6 +277,11 @@ async def trade_history(
             raise HTTPException(status_code=404, detail="Account not found")
         account_ids = [account_id]
 
+    # account_id → account_number lookup so each row carries its account label
+    # (the trader UI uses this to surface per-account separation when looking
+    # at the aggregated history across live + MAM follower sub-accounts).
+    acct_number_by_id = {a.id: a.account_number for a in accounts}
+
     # Lazy backfill: relabel every still-'manual' history row where the
     # close_price crossed the position's SL/TP. Idempotent + cheap because it
     # only touches rows that are still 'manual' AND have an SL/TP set — once
@@ -354,6 +367,7 @@ async def trade_history(
         items.append({
             "id": str(t.id),
             "account_id": str(t.account_id) if t.account_id else None,
+            "account_number": acct_number_by_id.get(t.account_id),
             "symbol": t.instrument.symbol if t.instrument else None,
             "side": side_val, "lots": float(t.lots),
             "open_price": float(t.open_price), "close_price": float(t.close_price),
