@@ -365,11 +365,20 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
   };
 
   const loadHistory = useCallback(async () => {
+    // Without an active account we can't sensibly scope history — bail early
+    // rather than fetch every account (which would dump old MAM-follower
+    // copy mirrors into the terminal's Closed Positions tab while the user
+    // is sitting on a real/live account).
+    if (!activeAccount?.id) {
+      setHistoryTrades([]);
+      return;
+    }
     setHistoryLoading(true);
     try {
       const res = await api.get<{ items?: ClosedTrade[] } | ClosedTrade[]>('/portfolio/trades', {
         page: '1',
         per_page: '200',
+        account_id: activeAccount.id,
       });
       setHistoryTrades(
         (res && typeof res === 'object' && 'items' in res ? res.items : Array.isArray(res) ? res : []) || [],
@@ -378,11 +387,13 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
       setHistoryTrades([]);
     }
     setHistoryLoading(false);
-  }, []);
+  }, [activeAccount?.id]);
 
+  // Re-run when the user switches accounts too, so the history pane never
+  // shows trades from a previously-selected account.
   useEffect(() => {
     if (activeTab === 'history') void loadHistory();
-  }, [activeTab, loadHistory]);
+  }, [activeTab, loadHistory, activeAccount?.id]);
 
   const closePosition = (id: string, lots?: number) => {
     unlockAudio();
