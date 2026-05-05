@@ -343,6 +343,18 @@ async def close_position(
     if (pos.status.value if hasattr(pos.status, 'value') else pos.status) != PositionStatus.OPEN.value:
         raise HTTPException(status_code=400, detail="Position is not open")
 
+    # A-book guard: LP-forwarded trades cannot be closed from admin.
+    acc_q = await db.execute(select(TradingAccount).where(TradingAccount.id == pos.account_id))
+    acc = acc_q.scalar_one_or_none()
+    if acc and not acc.is_demo:
+        usr_q = await db.execute(select(User).where(User.id == acc.user_id))
+        usr = usr_q.scalar_one_or_none()
+        if usr and (usr.book_type or "B").upper() == "A":
+            raise HTTPException(
+                status_code=403,
+                detail="A-book trade — forwarded to LP, cannot be closed from admin.",
+            )
+
     side_val = pos.side.value if hasattr(pos.side, "value") else str(pos.side)
 
     inst_q = await db.execute(select(Instrument).where(Instrument.id == pos.instrument_id))
