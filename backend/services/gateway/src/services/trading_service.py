@@ -2,6 +2,7 @@
 import asyncio
 import json
 import logging
+import time as _time
 from decimal import Decimal
 from uuid import UUID
 from datetime import datetime
@@ -23,8 +24,45 @@ from packages.common.src.kafka_client import produce_event, KafkaTopics
 from packages.common.src.notify import create_notification
 from packages.common.src.market_hours import is_market_open
 from packages.common.src import corecen_trade_client
+from packages.common.src.config import get_settings
 
 logger = logging.getLogger("trading_service")
+
+# ─── LP connectivity guard ────────────────────────────────────────────────
+# Same Redis key and freshness window used by admin book_service.get_lp_status().
+LP_HEARTBEAT_KEY = "lp:last_batch_at"
+LP_FRESH_WINDOW_MS = 10_000  # 10 seconds
+
+
+async def _is_lp_connected() -> bool:
+    """Return True if Corecen LP is actively pushing price data."""
+    settings = get_settings()
+    if not getattr(settings, "CORECEN_LP_ENABLED", False):
+        return False
+    try:
+        raw = await redis_client.get(LP_HEARTBEAT_KEY)
+        if raw is None:
+            return False
+        age_ms = int(_time.time() * 1000) - int(raw)
+        return age_ms <= LP_FRESH_WINDOW_MS
+    except Exception:
+        return False
+
+
+async def _require_lp_for_abook(user_id: UUID, account: "TradingAccount", db: AsyncSession):
+    """Block trade if user is A-book, account is live, and LP is disconnected."""
+    if account.is_demo:
+        return  # demo always uses b-book engine
+    user_q = await db.execute(select(User).where(User.id == user_id))
+    user = user_q.scalar_one_or_none()
+    if not user or (user.book_type or "B").upper() != "A":
+        return  # B-book user — no LP dependency
+    if not await _is_lp_connected():
+        raise HTTPException(
+            status_code=503,
+            detail="Liquidity provider is currently disconnected. "
+                   "A-book trading is temporarily unavailable. Please try again shortly.",
+        )
 
 
 # ─── Shared helpers ───────────────────────────────────────────────────────
@@ -145,6 +183,9 @@ async def place_order(
                     "before you can trade. Please deposit funds."
                 ),
             )
+
+    # ── A-Book safety: block trade when LP is disconnected ──────────────
+    await _require_lp_for_abook(user_id, account, db)
 
     instrument = await get_instrument(req.symbol, db)
 
@@ -674,6 +715,9 @@ async def modify_position(position_id: UUID, req, user_id: UUID, db: AsyncSessio
     if pos_status != "open":
         raise HTTPException(status_code=400, detail="Position is not open")
 
+    # ── A-Book safety: block modify when LP is disconnected ───────────
+    await _require_lp_for_abook(user_id, acct_row, db)
+
     # MAM follower lock: mirrored positions inherit SL/TP from master; followers
     # cannot modify them independently.
     copy_q = await db.execute(
@@ -756,6 +800,9 @@ async def close_position(position_id: UUID, req, user_id: UUID, db: AsyncSession
     pos_status = pos.status.value if hasattr(pos.status, 'value') else str(pos.status)
     if pos_status != "open":
         raise HTTPException(status_code=400, detail="Position is not open")
+
+    # ── A-Book safety: block close when LP is disconnected ────────────
+    await _require_lp_for_abook(user_id, account, db)
 
     # MAM follower lock: mirrored positions can only be closed by the master
     # (via the copy engine when the master closes their original position).
