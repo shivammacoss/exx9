@@ -1572,10 +1572,18 @@ function AccountCard({
                   <BookOpen size={16} />
                   View Trades
                 </Link>
-                <div className="rounded-lg border border-border-primary bg-bg-secondary px-4 py-2.5 text-xs text-text-tertiary flex items-center gap-2 sm:ml-auto">
+                <div className="rounded-lg border border-border-primary bg-bg-secondary px-4 py-2.5 text-xs text-text-tertiary flex items-center gap-2">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   {row.account_number.startsWith('IF') ? 'Managed by PAMM master' : 'Managed by MAM master'}
                 </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setCloseModal(true); }}
+                  className="inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg text-red-400 text-xs sm:text-sm font-medium hover:bg-red-500/10 transition-colors sm:ml-auto"
+                >
+                  <Trash2 size={14} />
+                  Close Account
+                </button>
               </>
             ) : isPoolAccount ? (
               <>
@@ -1645,9 +1653,14 @@ function AccountCard({
           <ul className="text-xs text-text-tertiary space-y-1 pl-4 list-disc">
             <li>Any open positions will close at their open price (zero P&amp;L).</li>
             <li>Pending orders will be cancelled.</li>
-            {row.balance + (row.equity - row.balance) > 0 ? (
+            {row.balance > 0 ? (
               <li>
-                <span className="text-text-secondary font-semibold">{fmt(row.balance, row.currency)}</span> will transfer to your main wallet.
+                <span className="text-text-secondary font-semibold">{fmt(row.balance, row.currency)}</span> will be returned to your main wallet automatically.
+              </li>
+            ) : null}
+            {isManagedAccount ? (
+              <li className="text-amber-500">
+                Copy trading from this master will stop and the allocation will be closed.
               </li>
             ) : null}
             {isPoolAccount ? (
