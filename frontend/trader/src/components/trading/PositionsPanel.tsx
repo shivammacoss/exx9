@@ -321,6 +321,13 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
   /** Terminal open tab: static trade cards vs compact table. */
   const [terminalOpenCardView, setTerminalOpenCardView] = useState(false);
   const [sharePosition, setSharePosition] = useState<Position | null>(null);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'self' | 'copy'>('all');
+
+  const filteredHistory = historyFilter === 'all'
+    ? historyTrades
+    : historyFilter === 'copy'
+      ? historyTrades.filter((t) => t.trade_type === 'copy_trade')
+      : historyTrades.filter((t) => t.trade_type !== 'copy_trade');
 
   const totalPnl = positions.reduce((s, p) => s + (p.profit || 0), 0);
 
@@ -603,7 +610,7 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
   const tabs: { id: TabId; label: string; count: number }[] = [
     { id: 'open', label: 'Open', count: positions.length },
     { id: 'pending', label: 'Pending', count: pendingOrders.length },
-    { id: 'history', label: 'History', count: historyTrades.length },
+    { id: 'history', label: 'History', count: filteredHistory.length },
   ];
 
   const exportCurrentCsv = () => {
@@ -1354,6 +1361,28 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
 
             {activeTab === 'history' && (
               <div className="min-w-0 w-full flex-1 flex flex-col min-h-0 overflow-hidden">
+                {/* Trade type filter pills */}
+                <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 border-b border-border-glass/30">
+                  {(['all', 'self', 'copy'] as const).map((f) => {
+                    const label = f === 'all' ? 'All' : f === 'self' ? 'My Trades' : 'Copy Trades';
+                    const count = f === 'all' ? historyTrades.length : f === 'copy' ? historyTrades.filter((t) => t.trade_type === 'copy_trade').length : historyTrades.filter((t) => t.trade_type !== 'copy_trade').length;
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => setHistoryFilter(f)}
+                        className={clsx(
+                          'px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide transition-colors',
+                          historyFilter === f
+                            ? 'bg-accent/15 text-accent border border-accent/30'
+                            : 'text-text-tertiary hover:text-text-secondary hover:bg-bg-hover border border-transparent',
+                        )}
+                      >
+                        {label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
                 {historyLoading ? (
                   <div className="px-4 py-12 text-center text-text-tertiary animate-pulse text-sm flex-1 flex items-center justify-center min-h-[120px]">
                     Loading history…
@@ -1362,10 +1391,10 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
                   <>
                   {/* Mobile card layout */}
                   <div className="md:hidden flex-1 overflow-y-auto space-y-2 p-2">
-                    {historyTrades.length === 0 ? (
+                    {filteredHistory.length === 0 ? (
                       <div className="px-4 py-12 text-center text-sm text-text-tertiary">No trade history</div>
                     ) : (
-                      historyTrades.map((trade) => {
+                      filteredHistory.map((trade) => {
                         const d = getDigits(trade.symbol);
                         const pnl = trade.pnl || 0;
                         const charges = trade.commission || 0;
@@ -1425,7 +1454,7 @@ export default function PositionsPanel({ variant = 'default' }: PositionsPanelPr
                       </tr>
                     </thead>
                     <tbody>
-                      {historyTrades.map((trade) => {
+                      {filteredHistory.map((trade) => {
                         const d = getDigits(trade.symbol);
                         const pnl = trade.pnl || 0;
                         const charges = trade.commission || 0;
