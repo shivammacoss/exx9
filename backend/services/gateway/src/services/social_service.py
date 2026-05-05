@@ -439,6 +439,8 @@ async def list_follow_requests(user_id: UUID, db: AsyncSession) -> dict:
 
 
 async def my_copies(user_id: UUID, db: AsyncSession) -> dict:
+    from packages.common.src.redis_client import PriceChannel
+
     result = await db.execute(
         select(InvestorAllocation, MasterAccount, User.first_name, User.last_name)
         .join(MasterAccount, InvestorAllocation.master_id == MasterAccount.id)
@@ -453,15 +455,117 @@ async def my_copies(user_id: UUID, db: AsyncSession) -> dict:
 
     items = []
     for alloc, master, first_name, last_name in rows:
+        # ── Investor account details ──
+        inv_acct = None
+        inv_account_number = None
+        inv_balance = 0.0
+        inv_equity = 0.0
+        inv_leverage = 0
+        if alloc.investor_account_id:
+            acct_q = await db.execute(
+                select(TradingAccount).where(TradingAccount.id == alloc.investor_account_id)
+            )
+            inv_acct = acct_q.scalar_one_or_none()
+            if inv_acct:
+                inv_account_number = inv_acct.account_number
+                inv_balance = float(inv_acct.balance or 0)
+                inv_leverage = int(inv_acct.leverage or 0)
+
+        # ── Compute real-time PnL from open positions on the investor account ──
+        unrealized_pnl = Decimal("0")
+        open_count = 0
+        closed_count = 0
+        if alloc.investor_account_id:
+            # Open positions — compute unrealized pnl
+            open_pos_q = await db.execute(
+                select(Position).where(
+                    Position.account_id == alloc.investor_account_id,
+                    Position.status == PositionStatus.OPEN,
+                )
+            )
+            open_positions = open_pos_q.scalars().all()
+            open_count = len(open_positions)
+            for pos in open_positions:
+                instrument = pos.instrument
+                if not instrument:
+                    continue
+                tick_data = await redis_client.get(PriceChannel.tick_key(instrument.symbol))
+                if not tick_data:
+                    continue
+                tick = json.loads(tick_data)
+                side_val = pos.side.value if hasattr(pos.side, "value") else str(pos.side)
+                current_price = Decimal(str(tick["bid"])) if side_val == "buy" else Decimal(str(tick["ask"]))
+                contract_size = instrument.contract_size or Decimal("100000")
+                if side_val == "buy":
+                    pnl = (current_price - pos.open_price) * pos.lots * contract_size
+                else:
+                    pnl = (pos.open_price - current_price) * pos.lots * contract_size
+                try:
+                    from .trading_service import quote_to_account_pnl
+                    pnl = quote_to_account_pnl(
+                        pnl,
+                        getattr(instrument, "base_currency", None),
+                        getattr(instrument, "quote_currency", None),
+                        current_price,
+                        symbol=getattr(instrument, "symbol", None),
+                    )
+                except Exception:
+                    pass
+                unrealized_pnl += pnl
+
+            # Count closed trades
+            closed_q = await db.execute(
+                select(func.count()).select_from(CopyTrade).where(
+                    CopyTrade.investor_allocation_id == alloc.id,
+                    CopyTrade.status == "closed",
+                )
+            )
+            closed_count = closed_q.scalar() or 0
+
+        # Equity = balance + unrealized
+        if inv_acct:
+            inv_equity = inv_balance + float(unrealized_pnl)
+
+        # Total profit = realized (stored) + unrealized (live)
+        realized_pnl = float(alloc.total_profit or 0)
+        total_pnl = realized_pnl + float(unrealized_pnl)
+        alloc_amt = float(alloc.allocation_amount or 0)
+        roi_pct = (total_pnl / alloc_amt * 100) if alloc_amt > 0 else 0.0
+
+        # Master account number (so user can identify which master)
+        master_account_number = None
+        if master.account_id:
+            m_acct_q = await db.execute(
+                select(TradingAccount.account_number).where(TradingAccount.id == master.account_id)
+            )
+            m_row = m_acct_q.first()
+            if m_row:
+                master_account_number = m_row[0]
+
         items.append({
-            "id": str(alloc.id), "master_id": str(master.id),
+            "id": str(alloc.id),
+            "master_id": str(master.id),
             "provider_name": f"{first_name or ''} {last_name or ''}".strip(),
-            "allocation_amount": float(alloc.allocation_amount),
-            "total_profit": float(alloc.total_profit),
-            "total_return_pct": float(master.total_return_pct),
+            "allocation_amount": alloc_amt,
+            "total_profit": total_pnl,
+            "realized_pnl": realized_pnl,
+            "unrealized_pnl": float(unrealized_pnl),
+            "total_return_pct": roi_pct,
             "copy_type": alloc.copy_type or "signal",
             "status": alloc.status,
             "created_at": alloc.created_at.isoformat() if alloc.created_at else None,
+            # Investor account info
+            "investor_account_number": inv_account_number,
+            "investor_account_id": str(alloc.investor_account_id) if alloc.investor_account_id else None,
+            "investor_balance": inv_balance,
+            "investor_equity": inv_equity,
+            "investor_leverage": inv_leverage,
+            # Master account info
+            "master_account_number": master_account_number,
+            "performance_fee_pct": float(master.performance_fee_pct or 0),
+            # Trade counts
+            "open_trades": open_count,
+            "closed_trades": closed_count,
         })
     return {"items": items, "total": len(items)}
 

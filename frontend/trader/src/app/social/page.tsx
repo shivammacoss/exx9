@@ -44,10 +44,21 @@ interface CopySubscription {
   provider_name: string;
   allocation_amount: number;
   total_profit: number;
+  realized_pnl: number;
+  unrealized_pnl: number;
   total_return_pct: number;
   copy_type: string;
   status: string;
   created_at: string;
+  investor_account_number: string | null;
+  investor_account_id: string | null;
+  investor_balance: number;
+  investor_equity: number;
+  investor_leverage: number;
+  master_account_number: string | null;
+  performance_fee_pct: number;
+  open_trades: number;
+  closed_trades: number;
 }
 
 interface PaginatedResponse<T> {
@@ -780,63 +791,111 @@ function MyCopiesTab() {
   if (copies.length === 0) return <EmptyState message="No active MAM subscriptions yet" />;
 
   return (
-    <div className="space-y-3">
-      {copies.map((c) => (
+    <div className="space-y-4">
+      {copies.map((c) => {
+        const pnl = c.total_profit ?? 0;
+        const roi = c.total_return_pct ?? 0;
+        const realized = c.realized_pnl ?? 0;
+        const unrealized = c.unrealized_pnl ?? 0;
+        return (
         <div
           key={c.id}
-          className="flex items-center justify-between gap-4 p-4 rounded-xl bg-bg-secondary border border-border-glass [data-theme='light']:bg-bg-tertiary [data-theme='light']:border-black"
+          className="rounded-xl bg-bg-secondary border border-border-glass overflow-hidden [data-theme='light']:bg-bg-tertiary [data-theme='light']:border-black"
         >
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold text-text-primary truncate">{c.provider_name}</span>
-              <span className={clsx(
-                'px-1.5 py-0.5 rounded text-[10px] font-medium',
-                c.status === 'active' ? 'bg-buy/20 text-buy' : 'bg-text-tertiary/20 text-text-tertiary'
-              )}>
-                {c.status}
-              </span>
-              <span className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase bg-accent/15 text-accent">
-                {c.copy_type || 'signal'}
-              </span>
+          {/* Header row */}
+          <div className="flex items-start justify-between gap-3 p-4 pb-0">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="text-sm font-bold text-text-primary truncate">{c.provider_name}</span>
+                <span className={clsx(
+                  'px-1.5 py-0.5 rounded text-[10px] font-medium',
+                  c.status === 'active' ? 'bg-buy/20 text-buy' : 'bg-text-tertiary/20 text-text-tertiary'
+                )}>
+                  {c.status}
+                </span>
+                <span className="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase bg-accent/15 text-accent">
+                  {c.copy_type || 'signal'}
+                </span>
+              </div>
+              {c.investor_account_number && (
+                <p className="text-[11px] text-text-tertiary">
+                  Your account: <span className="font-mono font-semibold text-text-secondary">{c.investor_account_number}</span>
+                  {c.master_account_number && (
+                    <> &middot; Master: <span className="font-mono font-semibold text-text-secondary">{c.master_account_number}</span></>
+                  )}
+                </p>
+              )}
             </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-secondary">
-              <span>Allocated: <span className="text-text-primary font-medium">${c.allocation_amount.toLocaleString()}</span></span>
-              <span>PnL: <span className={clsx('font-medium', c.total_profit >= 0 ? 'text-buy' : 'text-sell')}>{c.total_profit >= 0 ? '+' : ''}${c.total_profit.toLocaleString()}</span></span>
-              <span>ROI: <span className={clsx('font-medium', c.total_return_pct >= 0 ? 'text-buy' : 'text-sell')}>{c.total_return_pct >= 0 ? '+' : ''}{c.total_return_pct.toFixed(2)}%</span></span>
+            <div className="flex items-center gap-2 shrink-0">
+              {c.status === 'active' && (
+                <button
+                  type="button"
+                  onClick={() => openRefill(c)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-accent text-accent hover:bg-accent hover:text-black disabled:opacity-50 transition-all"
+                >
+                  + Refill
+                </button>
+              )}
+              {(c.copy_type === 'pamm' || c.copy_type === 'mam') ? (
+                <button
+                  type="button"
+                  disabled={stoppingId === c.id}
+                  onClick={() => withdrawManaged(c.id, c.provider_name)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-warning text-warning hover:bg-warning hover:text-white disabled:opacity-50 transition-all"
+                >
+                  {stoppingId === c.id ? 'Withdrawing…' : 'Withdraw'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={stoppingId === c.id}
+                  onClick={() => stopCopy(c.id, c.provider_name)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-sell text-sell hover:bg-sell hover:text-white disabled:opacity-50 transition-all"
+                >
+                  {stoppingId === c.id ? 'Stopping…' : 'Stop'}
+                </button>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            {c.status === 'active' && (
-              <button
-                type="button"
-                onClick={() => openRefill(c)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-accent text-accent hover:bg-accent hover:text-black disabled:opacity-50 transition-all"
-              >
-                + Refill
-              </button>
-            )}
-            {(c.copy_type === 'pamm' || c.copy_type === 'mam') ? (
-              <button
-                type="button"
-                disabled={stoppingId === c.id}
-                onClick={() => withdrawManaged(c.id, c.provider_name)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-warning text-warning hover:bg-warning hover:text-white disabled:opacity-50 transition-all"
-              >
-                {stoppingId === c.id ? 'Withdrawing…' : 'Withdraw'}
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={stoppingId === c.id}
-                onClick={() => stopCopy(c.id, c.provider_name)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-sell text-sell hover:bg-sell hover:text-white disabled:opacity-50 transition-all"
-              >
-                {stoppingId === c.id ? 'Stopping…' : 'Stop'}
-              </button>
-            )}
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
+            <div>
+              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Allocated</p>
+              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${c.allocation_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Balance</p>
+              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${(c.investor_balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Equity</p>
+              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${(c.investor_equity ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Total P&L</p>
+              <p className={clsx('text-sm font-bold font-mono tabular-nums', pnl >= 0 ? 'text-buy' : 'text-sell')}>
+                {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className={clsx('text-[10px] font-mono tabular-nums', roi >= 0 ? 'text-buy/70' : 'text-sell/70')}>
+                ROI: {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
+              </p>
+            </div>
+          </div>
+
+          {/* Detail row */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 px-4 pb-4 text-[11px] text-text-tertiary">
+            <span>Realized: <span className={clsx('font-mono font-medium', realized >= 0 ? 'text-buy/80' : 'text-sell/80')}>{realized >= 0 ? '+' : ''}${Math.abs(realized).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
+            <span>Unrealized: <span className={clsx('font-mono font-medium', unrealized >= 0 ? 'text-buy/80' : 'text-sell/80')}>{unrealized >= 0 ? '+' : ''}${Math.abs(unrealized).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></span>
+            <span>Open: <span className="font-mono text-text-secondary">{c.open_trades ?? 0}</span></span>
+            <span>Closed: <span className="font-mono text-text-secondary">{c.closed_trades ?? 0}</span></span>
+            {c.performance_fee_pct > 0 && <span>Fee: <span className="text-text-secondary">{c.performance_fee_pct}%</span></span>}
+            {c.investor_leverage > 0 && <span>Leverage: <span className="font-mono text-text-secondary">1:{c.investor_leverage}</span></span>}
+            <span>Joined: <span className="text-text-secondary">{c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</span></span>
           </div>
         </div>
-      ))}
+        );
+      })}
 
       {/* Refill Modal */}
       {refillTarget && (
