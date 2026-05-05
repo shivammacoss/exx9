@@ -43,6 +43,7 @@ class BootstrapSessionRequest(BaseModel):
 
 class OpenLiveAccountRequest(BaseModel):
     account_group_id: UUID
+    leverage: int | None = None  # user-chosen leverage; capped at the group's max
 
 
 class TokenResponse(BaseModel):

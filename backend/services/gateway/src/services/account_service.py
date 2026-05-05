@@ -127,7 +127,18 @@ async def open_live_account(
             new_balance = min_d
 
     num = generate_account_number()
-    lev = int(group.leverage_default or 100)
+    max_lev = int(group.leverage_default or 100)
+    # User can pick any leverage from 1 up to the group's max.
+    lev = max_lev
+    if req.leverage is not None:
+        if req.leverage < 1:
+            raise HTTPException(status_code=400, detail="Leverage must be at least 1")
+        if req.leverage > max_lev:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Leverage cannot exceed the broker limit for this account type (1:{max_lev})",
+            )
+        lev = req.leverage
     new_acc = TradingAccount(
         user_id=user_id,
         account_group_id=group.id,
