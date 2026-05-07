@@ -102,12 +102,13 @@ function LightweightChartInner() {
           backgroundColor: chartBg,
           withdateranges: true,
           allow_symbol_change: false,
-          details: true,
+          // Right-side buttons cleaned up — `details` was the symbol-info /
+          // notepad icon and `show_popup_button` was the open-in-new-window
+          // icon. Both clutter the chart edge for the user's terminal layout.
+          details: false,
           hotlist: false,
           calendar: false,
-          show_popup_button: true,
-          popup_width: '1000',
-          popup_height: '650',
+          show_popup_button: false,
           studies: [],
           studies_overrides: {},
           overrides: {
