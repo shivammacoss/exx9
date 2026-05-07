@@ -22,7 +22,7 @@ import PositionsPanel from '@/components/trading/PositionsPanel';
 import { ActiveAccountBadge } from '@/components/trading/ActiveAccountBadge';
 import TerminalLeftRail, { type TerminalSpaceId } from '@/components/trading/TerminalLeftRail';
 
-const AdvancedChart = dynamic(() => import('@/components/charts/AdvancedChart'), { ssr: false });
+const AdvancedChart = dynamic(() => import('@/components/charts/LightweightChart'), { ssr: false });
 const TradingViewNewsTimeline = dynamic(() => import('@/components/charts/TradingViewNewsTimeline'), {
   ssr: false,
 });
