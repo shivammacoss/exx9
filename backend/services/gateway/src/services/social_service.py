@@ -1555,6 +1555,11 @@ async def update_account_risk(
     Pass max_drawdown_pct=None to disable. Saving a new limit also clears the
     tripped flag so the user can re-enable copy trading after editing the value
     without going through the explicit reset step.
+
+    Refuses a value that the current live drawdown already exceeds — otherwise
+    the panel would briefly show "active" before the next engine cycle re-trips
+    the allocation, which feels broken. The 400 surfaces this directly so the
+    user picks a higher threshold or clicks Reset & Resume instead.
     """
     alloc = await _resolve_allocation_for_account(investor_account_id, user_id, db)
 
@@ -1565,6 +1570,16 @@ async def update_account_risk(
             raise HTTPException(
                 status_code=400,
                 detail="max_drawdown_pct must be between 0 and 100 (exclusive)",
+            )
+        current_dd = await _compute_current_drawdown(alloc, db)
+        if current_dd > float(max_drawdown_pct):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Current loss is {current_dd:.2f}% — already past the {float(max_drawdown_pct):.2f}% "
+                    f"limit you tried to set. Choose a higher percentage, or click Reset & Resume "
+                    f"to disable protection first."
+                ),
             )
         alloc.max_drawdown_pct = max_drawdown_pct
 

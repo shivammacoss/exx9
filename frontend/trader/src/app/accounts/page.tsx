@@ -1134,10 +1134,12 @@ type RiskState = {
   current_drawdown_pct: number;
 };
 
-/** Loss-protection panel for MAM follower accounts (CF prefix). Lets the
- * investor cap their drawdown — once equity falls by the configured %, the
- * copy engine force-closes open mirrors and stops opening new ones until
- * the investor explicitly resets. Default state is "off". */
+/** Loss-protection panel for managed sub-accounts (CF copy-fund and IF
+ * investment-fund). Lets the investor cap their drawdown — once equity
+ * falls by the configured %, the copy engine force-closes open mirrors and
+ * stops opening new ones until the investor explicitly resets. Default
+ * state is "off". PAMM allocations have no sub-account so they're naturally
+ * excluded from this panel; the parent renders us only for CF/IF cards. */
 function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen: boolean }) {
   const [risk, setRisk] = useState<RiskState | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1264,7 +1266,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {headerIcon}
           <div className="min-w-0">
-            <p className="text-sm font-bold text-text-primary truncate">Loss Protection (MAM)</p>
+            <p className="text-sm font-bold text-text-primary truncate">Loss Protection</p>
             <p className={clsx('text-xs truncate', tripped ? 'text-red-400' : 'text-text-tertiary')}>
               {headerLabel}
             </p>
@@ -1287,7 +1289,9 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
           <div className="text-xs text-red-300 leading-relaxed">
             Your account hit the {Number(risk.max_drawdown_pct).toFixed(2)}% drawdown limit on
             {' '}{risk.tripped_at ? new Date(risk.tripped_at).toLocaleString() : 'recent activity'}.
-            All open mirrors were closed and master trades will not be copied until you reset.
+            All open mirrors were closed and master trades will not be copied. Click
+            {' '}<span className="font-semibold">Reset &amp; Resume</span> to start receiving
+            trades again — protection turns off and you can re-arm it with a fresh limit afterwards.
           </div>
         </div>
       )}
@@ -1338,9 +1342,9 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
       </div>
 
       <p className="mt-3 text-[11px] text-text-tertiary leading-relaxed">
-        When enabled, the system continuously checks your equity. If your loss reaches the limit,
-        all open copy positions are closed and new master trades stop copying until you press
-        Reset & Resume. Off by default.
+        When enabled, the system continuously checks your equity against the deposited amount.
+        If your loss reaches the limit, all open copy positions are closed and new master trades
+        stop copying until you press Reset &amp; Resume. Off by default.
       </p>
     </div>
   );
@@ -1515,7 +1519,12 @@ function AccountCard({
           the expanded section so a tripped follower sees the alert and the
           Reset & Resume button on a collapsed card too (mobile users rarely
           tap to expand). The panel hides itself when protection is idle. */}
-      {row.account_number.startsWith('CF') && (
+      {/* Both CF (signal copy fund) and IF (MAM/managed investment fund) have
+          an InvestorAllocation backing the account — the copy engine mirrors
+          master trades onto either, so drawdown protection applies to both.
+          PAMM allocations have no sub-account at all and are naturally
+          excluded since they never produce a CF/IF row. */}
+      {isManagedAccount && (
         <div className="px-3 sm:px-5 md:px-6 pb-3 sm:pb-4">
           <RiskProtectionPanel accountId={row.id} isOpen={open} />
         </div>
