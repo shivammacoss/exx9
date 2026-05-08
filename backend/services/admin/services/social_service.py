@@ -188,26 +188,24 @@ async def distribute_pamm_profit(
 
     master_cut = total_perf_fee - total_admin_fee
     if master_cut > 0:
-        master_acct_result = await db.execute(
-            select(TradingAccount).where(TradingAccount.id == master.account_id)
-        )
-        master_acct = master_acct_result.scalar_one_or_none()
-        if master_acct:
-            master_acct.balance = (master_acct.balance or Decimal("0")) + Decimal(str(round(master_cut, 8)))
-            master_acct.equity = master_acct.balance + (master_acct.credit or Decimal("0"))
-            master_acct.free_margin = master_acct.equity - (master_acct.margin_used or Decimal("0"))
+        master_cut_dec = Decimal(str(round(master_cut, 8)))
+        master_user = await db.get(User, master.user_id)
+        if master_user:
+            master_user.main_wallet_balance = (
+                master_user.main_wallet_balance or Decimal("0")
+            ) + master_cut_dec
             db.add(Transaction(
                 user_id=master.user_id,
                 account_id=master.account_id,
                 type="ib_commission",
-                amount=Decimal(str(round(master_cut, 8))),
-                balance_after=master_acct.balance,
-                description="PAMM manager performance fee earnings",
+                amount=master_cut_dec,
+                balance_after=master_user.main_wallet_balance,
+                description="PAMM manager performance fee earnings — credited to main wallet",
                 created_by=admin_id,
             ))
 
         # Track master's total fee earned
-        master.total_fee_earned = (master.total_fee_earned or Decimal("0")) + Decimal(str(round(master_cut, 8)))
+        master.total_fee_earned = (master.total_fee_earned or Decimal("0")) + master_cut_dec
 
     # Credit admin platform fee
     if total_admin_fee > 0:

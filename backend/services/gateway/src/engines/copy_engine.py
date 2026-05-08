@@ -26,7 +26,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from packages.common.src.database import AsyncSessionLocal
 from packages.common.src.models import (
     MasterAccount, InvestorAllocation, CopyTrade, Position, PositionStatus,
-    TradingAccount, TradeHistory, Transaction, Order,
+    TradingAccount, TradeHistory, Transaction, Order, User,
 )
 from packages.common.src.redis_client import redis_client, PriceChannel
 from packages.common.src.admin_fees import credit_admin_fee
@@ -707,29 +707,30 @@ class CopyTradeEngine:
                 )
 
         if performance_fee > 0:
+            master_share = performance_fee - admin_fee
+            master_user = await db.get(User, master.user_id)
             master_account = await db.get(TradingAccount, master.account_id)
-            if master_account:
-                master_share = performance_fee - admin_fee
-                master_account.balance = (master_account.balance or Decimal("0")) + master_share
-                master_account.equity = master_account.balance + (master_account.credit or Decimal("0"))
-                master_account.free_margin = master_account.equity - (master_account.margin_used or Decimal("0"))
+            if master_user:
+                master_user.main_wallet_balance = (
+                    master_user.main_wallet_balance or Decimal("0")
+                ) + master_share
 
                 db.add(
                     Transaction(
                         user_id=master.user_id,
-                        account_id=master_account.id,
+                        account_id=master_account.id if master_account else None,
                         type="ib_commission",
                         amount=master_share,
-                        balance_after=master_account.balance,
+                        balance_after=master_user.main_wallet_balance,
                         reference_id=investor_pos.id,
-                        description="Performance fee earned from copy trade",
+                        description="Performance fee earned from copy trade — credited to main wallet",
                     )
                 )
 
                 if admin_fee > 0:
                     await credit_admin_fee(
                         db, admin_fee,
-                        description=f"Platform commission ({master.admin_commission_pct}%) from master {master_account.account_number} copy trade",
+                        description=f"Platform commission ({master.admin_commission_pct}%) from master {master_account.account_number if master_account else master.id} copy trade",
                         reference_id=investor_pos.id,
                     )
 
