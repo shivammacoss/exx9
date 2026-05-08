@@ -9,7 +9,7 @@ from time import monotonic
 import pyotp
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
@@ -240,7 +240,10 @@ async def register_user(
     if not await get_bool_setting("allow_new_registrations", True):
         raise AuthServiceError("New registrations are currently disabled", 403)
 
-    existing = await db.execute(select(User).where(User.email == email))
+    email = (email or "").strip().lower()
+    existing = await db.execute(
+        select(User).where(func.lower(User.email) == email)
+    )
     if existing.scalar_one_or_none():
         raise AuthServiceError("Email already registered")
 
@@ -279,7 +282,10 @@ async def login_user(
     db: AsyncSession,
 ) -> JSONResponse:
     rate_limit_http(request, "login", 40, 60.0)
-    result = await db.execute(select(User).where(User.email == email))
+    email = (email or "").strip().lower()
+    result = await db.execute(
+        select(User).where(func.lower(User.email) == email)
+    )
     user = result.scalar_one_or_none()
 
     if not user:
@@ -327,7 +333,9 @@ async def login_user(
 async def _ensure_shared_demo_user(db: AsyncSession) -> User:
     from packages.common.src.settings_store import get_int_setting
 
-    result = await db.execute(select(User).where(User.email == DEMO_SHARED_EMAIL))
+    result = await db.execute(
+        select(User).where(func.lower(User.email) == DEMO_SHARED_EMAIL)
+    )
     existing = result.scalar_one_or_none()
     if existing:
         if not existing.is_demo:
@@ -455,7 +463,10 @@ async def bootstrap_session(access_token: str, request: Request, db: AsyncSessio
 async def forgot_password(email: str, request: Request, db: AsyncSession) -> dict:
     rate_limit_http(request, "forgot-password", 5, 600.0)
     msg = {"message": "If an account exists for this email, you will receive password reset instructions shortly."}
-    result = await db.execute(select(User).where(User.email == email))
+    email = (email or "").strip().lower()
+    result = await db.execute(
+        select(User).where(func.lower(User.email) == email)
+    )
     user = result.scalar_one_or_none()
     if not user or user.status in ("banned", "blocked"):
         return msg

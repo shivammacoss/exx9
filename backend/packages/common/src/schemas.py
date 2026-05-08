@@ -3,7 +3,12 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+
+def _normalize_email(value: str) -> str:
+    """Lowercase + trim — email addresses are case-insensitive (Google/Flipkart style)."""
+    return (value or "").strip().lower()
 
 
 # ============================================
@@ -19,15 +24,30 @@ class RegisterRequest(BaseModel):
     country: Optional[str] = None
     referral_code: Optional[str] = None
 
+    @field_validator("email", mode="before")
+    @classmethod
+    def _norm_email(cls, v):
+        return _normalize_email(v) if isinstance(v, str) else v
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
     totp_code: Optional[str] = None
 
+    @field_validator("email", mode="before")
+    @classmethod
+    def _norm_email(cls, v):
+        return _normalize_email(v) if isinstance(v, str) else v
+
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _norm_email(cls, v):
+        return _normalize_email(v) if isinstance(v, str) else v
 
 
 class ResetPasswordRequest(BaseModel):

@@ -3,12 +3,22 @@ import uuid
 from datetime import datetime, date
 from decimal import Decimal
 from typing import Optional, Any
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
+
+
+def _normalize_email(value):
+    """Lowercase + trim — email addresses are case-insensitive."""
+    return (value or "").strip().lower() if isinstance(value, str) else value
 
 
 class AdminLoginRequest(BaseModel):
     email: str
     password: str
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _norm_email(cls, v):
+        return _normalize_email(v)
 
 
 class AdminLoginResponse(BaseModel):
@@ -688,6 +698,11 @@ class EmployeeIn(BaseModel):
     full_name: Optional[str] = None
     role: str
     phone: Optional[str] = None
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _norm_email(cls, v):
+        return _normalize_email(v)
 
 
 class EmployeeUpdate(BaseModel):

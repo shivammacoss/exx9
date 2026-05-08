@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 import httpx
 from fastapi import Request
 from fastapi.responses import JSONResponse, RedirectResponse
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from packages.common.src.config import get_settings
@@ -179,7 +179,9 @@ async def handle_callback(
 
     # 2) Else match by email and link Google to the existing local account.
     if not user:
-        user_q = await db.execute(select(User).where(User.email == email))
+        user_q = await db.execute(
+            select(User).where(func.lower(User.email) == email)
+        )
         user = user_q.scalar_one_or_none()
         if user:
             if user.status in ("banned", "blocked"):

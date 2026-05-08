@@ -55,7 +55,10 @@ async def create_employee(
     if body.role not in VALID_EMPLOYEE_ROLES:
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {VALID_EMPLOYEE_ROLES}")
 
-    existing_q = await db.execute(select(User).where(User.email == body.email))
+    email_norm = (body.email or "").strip().lower()
+    existing_q = await db.execute(
+        select(User).where(func.lower(User.email) == email_norm)
+    )
     if existing_q.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already in use")
 
@@ -71,7 +74,7 @@ async def create_employee(
         last_name = parts[1] if len(parts) > 1 else ""
 
     user = User(
-        email=body.email,
+        email=email_norm,
         password_hash=password_hash,
         first_name=first_name or "",
         last_name=last_name or "",
