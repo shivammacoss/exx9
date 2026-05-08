@@ -858,28 +858,30 @@ function MyCopiesTab() {
             </div>
           </div>
 
-          {/* Stats grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4">
-            <div>
-              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Allocated</p>
-              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${c.allocation_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Balance</p>
-              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${(c.investor_balance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Equity</p>
-              <p className="text-sm font-bold text-text-primary font-mono tabular-nums">${(c.investor_equity ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-            </div>
-            <div>
-              <p className="text-[10px] text-text-tertiary font-medium mb-0.5">Total P&L</p>
-              <p className={clsx('text-sm font-bold font-mono tabular-nums', pnl >= 0 ? 'text-buy' : 'text-sell')}>
-                {pnl >= 0 ? '+' : ''}{pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {/* Stats grid — Deposit / Profit / Total */}
+          <div className="grid grid-cols-3 gap-3 p-4">
+            <div className="rounded-lg border border-border-glass/50 bg-bg-tertiary/40 p-3">
+              <p className="text-[10px] text-text-tertiary font-medium mb-1 uppercase tracking-wide">Deposit</p>
+              <p className="text-base font-bold text-text-primary font-mono tabular-nums">
+                ${c.allocation_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
-              <p className={clsx('text-[10px] font-mono tabular-nums', roi >= 0 ? 'text-buy/70' : 'text-sell/70')}>
+              <p className="text-[10px] text-text-tertiary mt-0.5">Capital added (incl. refills)</p>
+            </div>
+            <div className="rounded-lg border border-border-glass/50 bg-bg-tertiary/40 p-3">
+              <p className="text-[10px] text-text-tertiary font-medium mb-1 uppercase tracking-wide">Profit</p>
+              <p className={clsx('text-base font-bold font-mono tabular-nums', pnl >= 0 ? 'text-buy' : 'text-sell')}>
+                {pnl >= 0 ? '+' : '−'}${Math.abs(pnl).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className={clsx('text-[10px] font-mono tabular-nums mt-0.5', roi >= 0 ? 'text-buy/70' : 'text-sell/70')}>
                 ROI: {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
               </p>
+            </div>
+            <div className="rounded-lg border border-accent/40 bg-accent/5 p-3">
+              <p className="text-[10px] text-accent/80 font-medium mb-1 uppercase tracking-wide">Total</p>
+              <p className="text-base font-bold text-text-primary font-mono tabular-nums">
+                ${(c.investor_equity ?? (c.allocation_amount + pnl)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-[10px] text-text-tertiary mt-0.5">Deposit + Profit (current value)</p>
             </div>
           </div>
 
