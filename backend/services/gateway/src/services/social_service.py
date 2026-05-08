@@ -1,5 +1,6 @@
 """Social Trading Service — Leaderboard, copy trading, MAM/PAMM, followers."""
 import json
+import logging
 import secrets
 from decimal import Decimal
 from uuid import UUID
@@ -14,6 +15,8 @@ from packages.common.src.models import (
     TradeHistory, AllocationCopyType, Transaction,
 )
 from packages.common.src.redis_client import redis_client
+
+logger = logging.getLogger("social_service")
 
 
 def _gen_investor_account_number(copy_type: str = "signal") -> str:
@@ -292,7 +295,15 @@ async def start_copy(
         status="active",
     )
     db.add(allocation)
+    await db.flush()
     master.followers_count = (master.followers_count or 0) + 1
+
+    # Open the first MAM/signal billing period so future closed-trade P&L
+    # accumulates against this allocation and settles at month-end.
+    if master.master_type in ("mamm", "signal_provider"):
+        from packages.common.src.mam_settlement_service import start_new_period
+        await start_new_period(db, allocation, starting_balance=amount)
+
     await db.commit()
     await db.refresh(allocation)
 
@@ -599,6 +610,12 @@ async def stop_copy(allocation_id: UUID, user_id: UUID, db: AsyncSession) -> dic
     )
     master = master_result.scalar_one_or_none()
 
+    # MAM / signal masters: fees are deferred to monthly settlement, so
+    # closing positions now must NOT deduct a per-trade fee — that gets
+    # charged in one shot via settle_period(reason='unfollow') below.
+    master_type = (getattr(master, "master_type", None) or "").lower() if master else ""
+    defer_to_settlement = master_type in ("mamm", "signal_provider")
+
     for copy in open_copies:
         investor_pos = await db.get(Position, copy.investor_position_id)
         if not investor_pos or investor_pos.status != PositionStatus.OPEN:
@@ -633,7 +650,7 @@ async def stop_copy(allocation_id: UUID, user_id: UUID, db: AsyncSession) -> dic
         )
 
         perf_fee = Decimal("0")
-        if gross > 0 and master:
+        if not defer_to_settlement and gross > 0 and master:
             perf_fee = gross * (master.performance_fee_pct or Decimal("0")) / Decimal("100")
         net = gross - perf_fee
         total_pnl += net
@@ -654,6 +671,31 @@ async def stop_copy(allocation_id: UUID, user_id: UUID, db: AsyncSession) -> dic
             closed_at=datetime.now(timezone.utc),
         ))
         copy.status = "closed"
+
+        # MAM/signal: also credit gross to investor account here (the
+        # copy_engine path skipped this when defer_to_settlement) so
+        # settle_period sees the correct ending balance.
+        if defer_to_settlement:
+            inv_acct = await db.get(TradingAccount, investor_pos.account_id)
+            if inv_acct:
+                inv_acct.balance = (inv_acct.balance or Decimal("0")) + gross
+                margin_release = (
+                    investor_pos.lots * contract_size * investor_pos.open_price
+                ) / Decimal(str(inv_acct.leverage))
+                inv_acct.margin_used = max(
+                    Decimal("0"), (inv_acct.margin_used or Decimal("0")) - margin_release
+                )
+                inv_acct.equity = inv_acct.balance + (inv_acct.credit or Decimal("0"))
+                inv_acct.free_margin = inv_acct.equity - inv_acct.margin_used
+
+    # MAM/signal monthly model: settle the active period now so the master
+    # collects accrued fees from this allocation before funds leave.
+    if defer_to_settlement and allocation.current_period_id is not None:
+        from packages.common.src.mam_settlement_service import settle_period
+        try:
+            await settle_period(db, allocation.id, reason="unfollow")
+        except Exception as e:
+            logger.exception("MAM settle_period on unfollow failed: %s", e)
 
     # No master-pool deduct: signal/copy trade keeps follower funds in the follower's
     # own CF account throughout. Master never held this money.
@@ -798,8 +840,11 @@ async def withdraw_managed_account(
             "wallet_balance": float(user.main_wallet_balance) if user else None,
         }
 
-    # ─── MAM withdrawal (legacy) ────────────────────────────────────────
-    # Close any open copied positions for this allocation
+    # ─── MAM withdrawal ────────────────────────────────────────────────
+    # Close any open copied positions for this allocation. With the new
+    # monthly settlement model, MAM masters defer fees — we close at gross,
+    # then run settle_period(reason='unfollow') below to charge the period
+    # fee in one shot.
     from packages.common.src.models import CopyTrade, Position, PositionStatus
     import json
     from packages.common.src.redis_client import redis_client, PriceChannel
@@ -811,6 +856,9 @@ async def withdraw_managed_account(
         )
     )
     open_copies = open_copies_q.scalars().all()
+
+    master_type = (getattr(master, "master_type", None) or "").lower() if master else ""
+    defer_to_settlement = master_type in ("mamm", "signal_provider")
 
     total_closed_pnl = Decimal("0")
     for copy in open_copies:
@@ -847,11 +895,27 @@ async def withdraw_managed_account(
         )
 
         perf_fee = Decimal("0")
-        if gross > 0 and master:
+        if not defer_to_settlement and gross > 0 and master:
             perf_fee = gross * (master.performance_fee_pct or Decimal("0")) / Decimal("100")
 
         net = gross - perf_fee
         total_closed_pnl += net
+
+        # Mirror the trading-account credit that copy_engine would normally
+        # do (it skips when defer_to_settlement so we do it here) so
+        # settle_period sees the right ending balance.
+        if defer_to_settlement:
+            inv_acct = await db.get(TradingAccount, investor_pos.account_id)
+            if inv_acct:
+                inv_acct.balance = (inv_acct.balance or Decimal("0")) + gross
+                margin_release = (
+                    investor_pos.lots * contract_size * investor_pos.open_price
+                ) / Decimal(str(inv_acct.leverage))
+                inv_acct.margin_used = max(
+                    Decimal("0"), (inv_acct.margin_used or Decimal("0")) - margin_release
+                )
+                inv_acct.equity = inv_acct.balance + (inv_acct.credit or Decimal("0"))
+                inv_acct.free_margin = inv_acct.equity - inv_acct.margin_used
 
         investor_pos.status = PositionStatus.CLOSED.value
         investor_pos.close_price = close_price
@@ -877,6 +941,15 @@ async def withdraw_managed_account(
         ))
 
         copy.status = "closed"
+
+    # MAM monthly model: settle the active period now so the master collects
+    # accrued fees from this allocation before the follower walks.
+    if defer_to_settlement and allocation.current_period_id is not None:
+        from packages.common.src.mam_settlement_service import settle_period
+        try:
+            await settle_period(db, allocation.id, reason="unfollow")
+        except Exception as e:
+            logger.exception("MAM settle_period on managed-withdrawal failed: %s", e)
 
     # Return capital + PnL to main wallet
     user_result = await db.execute(select(User).where(User.id == user_id))
@@ -1276,7 +1349,16 @@ async def invest_managed_account(
             max_drawdown_pct=max_drawdown_pct, status="active",
         )
         db.add(allocation)
+        await db.flush()
         master.followers_count = (master.followers_count or 0) + 1
+
+        # MAM follower: open initial billing period so trades accumulate
+        # toward month-end settlement. PAMM uses pool-distribution flow,
+        # not per-allocation settlement.
+        if master.master_type == "mamm" and investor_account is not None:
+            from packages.common.src.mam_settlement_service import start_new_period
+            await start_new_period(db, allocation, starting_balance=amount)
+
         await db.commit()
         await db.refresh(allocation)
 
@@ -1832,4 +1914,91 @@ async def master_performance(user_id: UUID, db: AsyncSession) -> dict:
         "max_investors": master.max_investors,
         "description": master.description,
         "monthly_breakdown": monthly_breakdown,
+    }
+
+
+# ─────────────── MAM / Signal monthly settlement ───────────────
+
+async def get_follower_period_status(
+    allocation_id: UUID, user_id: UUID, db: AsyncSession,
+) -> dict:
+    """Live period numbers for the follower's MAM/signal allocation card."""
+    alloc_q = await db.execute(
+        select(InvestorAllocation).where(
+            InvestorAllocation.id == allocation_id,
+            InvestorAllocation.investor_user_id == user_id,
+        )
+    )
+    allocation = alloc_q.scalar_one_or_none()
+    if not allocation:
+        raise HTTPException(status_code=404, detail="Allocation not found")
+
+    from packages.common.src.mam_settlement_service import compute_pending_fee
+    pending = await compute_pending_fee(db, allocation_id)
+
+    return {
+        "allocation_id": str(allocation_id),
+        "copy_type": allocation.copy_type,
+        "status": allocation.status,
+        "lifetime_master_fee_paid": float(allocation.lifetime_master_fee_paid or 0),
+        "lifetime_admin_fee_paid": float(allocation.lifetime_admin_fee_paid or 0),
+        **pending,
+    }
+
+
+async def get_master_pending_fees_summary(user_id: UUID, db: AsyncSession) -> dict:
+    """Aggregate every active MAM/signal follower's pending fee for this master."""
+    master_q = await db.execute(
+        select(MasterAccount).where(
+            MasterAccount.user_id == user_id,
+            MasterAccount.status.in_(["approved", "active"]),
+            MasterAccount.master_type.in_(["mamm", "signal_provider"]),
+        ).order_by(MasterAccount.created_at.desc())
+    )
+    master = master_q.scalars().first()
+    if not master:
+        raise HTTPException(
+            status_code=404,
+            detail="You are not a MAM/signal master",
+        )
+
+    allocs_q = await db.execute(
+        select(InvestorAllocation).where(
+            InvestorAllocation.master_id == master.id,
+            InvestorAllocation.status == "active",
+        )
+    )
+    allocations = allocs_q.scalars().all()
+
+    from packages.common.src.mam_settlement_service import compute_pending_fee
+    rows = []
+    total_pending = Decimal("0")
+    profitable_count = 0
+    loss_count = 0
+    for a in allocations:
+        p = await compute_pending_fee(db, a.id)
+        master_share = Decimal(str(p.get("pending_master_share", 0)))
+        rows.append({
+            "allocation_id": str(a.id),
+            "investor_user_id": str(a.investor_user_id),
+            "gross_pnl": p.get("gross_pnl", 0.0),
+            "pending_master_share": float(master_share),
+            "period_end": p.get("period_end"),
+        })
+        total_pending += master_share
+        if master_share > 0:
+            profitable_count += 1
+        else:
+            loss_count += 1
+
+    return {
+        "master_id": str(master.id),
+        "active_followers": len(allocations),
+        "profitable_followers": profitable_count,
+        "loss_or_zero_followers": loss_count,
+        "total_pending_master_share": float(total_pending),
+        "lifetime_total_fee_earned": float(master.total_fee_earned or 0),
+        "performance_fee_pct": float(master.performance_fee_pct or 0),
+        "admin_commission_pct": float(master.admin_commission_pct or 0),
+        "followers": rows,
     }

@@ -1,4 +1,5 @@
 """Admin Business Service — IB applications, agents, commission plans, MLM config, sub-brokers."""
+import logging
 import uuid
 import secrets
 import string
@@ -8,6 +9,8 @@ from datetime import datetime
 from fastapi import HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger("admin.business_service")
 
 from packages.common.src.models import (
     User, IBApplication, IBProfile, IBCommission, Referral,
@@ -823,6 +826,9 @@ async def delete_master(
     )
     follower_count = 0
     total_refunded = Decimal("0")
+    # MAM/signal: settle each follower's active period before refunding so
+    # the master collects whatever fee they earned up to deletion time.
+    is_eligible_master = master.master_type in ("mamm", "signal_provider") if master else False
     for alloc in allocs_q.scalars().all():
         follower_count += 1
         investor = await db.get(User, alloc.investor_user_id)
@@ -840,6 +846,16 @@ async def delete_master(
                 pos.close_price = pos.open_price
                 pos.profit = Decimal("0")
                 pos.closed_at = datetime.utcnow()
+
+        if is_eligible_master and alloc.current_period_id is not None:
+            try:
+                from packages.common.src.mam_settlement_service import settle_period
+                await settle_period(db, alloc.id, reason="master_deleted")
+            except Exception as e:
+                logger.warning(
+                    "MAM settle on master deletion failed for allocation=%s: %s",
+                    alloc.id, e,
+                )
 
         refund_amount = Decimal("0")
         if investor_acct:

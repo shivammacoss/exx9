@@ -255,3 +255,30 @@ async def master_performance(
     return await social_service.master_performance(
         user_id=current_user["user_id"], db=db,
     )
+
+
+# ──────────── MAM / Signal monthly settlement ────────────
+
+@router.get("/mam/follower/{allocation_id}/period-status")
+async def mam_follower_period_status(
+    allocation_id: UUID,
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Live pending-fee + period P&L numbers for a follower's MAM/signal
+    allocation. Read-only; the actual fee debit happens at settlement."""
+    return await social_service.get_follower_period_status(
+        allocation_id=allocation_id, user_id=current_user["user_id"], db=db,
+    )
+
+
+@router.get("/mam/master/pending-fees-summary")
+async def mam_master_pending_fees_summary(
+    current_user: dict = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Aggregate of master's pending fees across all active MAM/signal
+    followers — what they would collect if every period settled now."""
+    return await social_service.get_master_pending_fees_summary(
+        user_id=current_user["user_id"], db=db,
+    )

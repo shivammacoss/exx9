@@ -52,16 +52,29 @@ class StatsEngine:
             except Exception as e:
                 logger.error("Stats engine error: %s", e, exc_info=True)
 
-            # Management fee collection (daily)
+            # Daily jobs: management fee collection + MAM/signal monthly
+            # settlement. Both gated by MGMT_FEE_INTERVAL so they only run
+            # once per 24h regardless of stats engine tick rate.
             now = asyncio.get_event_loop().time()
             if now - self._mgmt_fee_last_run >= MGMT_FEE_INTERVAL:
                 try:
                     async with AsyncSessionLocal() as db:
                         await self._collect_management_fees(db)
                         await db.commit()
-                    self._mgmt_fee_last_run = now
                 except Exception as e:
                     logger.error("Management fee collection error: %s", e, exc_info=True)
+
+                try:
+                    from packages.common.src.mam_settlement_service import settle_all_due_periods
+                    async with AsyncSessionLocal() as db:
+                        result = await settle_all_due_periods(db)
+                        await db.commit()
+                    if result.get("due", 0) > 0:
+                        logger.info("MAM settlement run: %s", result)
+                except Exception as e:
+                    logger.error("MAM settlement run error: %s", e, exc_info=True)
+
+                self._mgmt_fee_last_run = now
 
             await asyncio.sleep(STATS_INTERVAL)
 

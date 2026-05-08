@@ -644,9 +644,17 @@ class CopyTradeEngine:
             symbol=getattr(instrument, "symbol", None),
         )
 
+        # MAM / signal-provider masters now use the deferred monthly
+        # settlement model — no per-trade fee deduction. Fees accrue across
+        # the period and settle at month_end / unfollow / master_deleted.
+        # PAMM retains per-trade fee logic (pool model, distributed
+        # differently via admin-triggered distribution).
+        master_type = (getattr(master, "master_type", None) or "").lower()
+        defer_to_monthly = master_type in ("mamm", "signal_provider")
+
         performance_fee = Decimal("0")
         admin_fee = Decimal("0")
-        if gross_profit > 0:
+        if gross_profit > 0 and not defer_to_monthly:
             perf_pct = master.performance_fee_pct or Decimal("0")
             performance_fee = gross_profit * perf_pct / Decimal("100")
             admin_pct = master.admin_commission_pct or Decimal("0")

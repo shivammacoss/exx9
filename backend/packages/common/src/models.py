@@ -706,6 +706,43 @@ class InvestorAllocation(Base):
     last_distribution_at = Column(DateTime(timezone=True), nullable=True)
     drawdown_tripped = Column(Boolean, default=False, nullable=False)
     drawdown_tripped_at = Column(DateTime(timezone=True), nullable=True)
+    current_period_id = Column(UUID(as_uuid=True), ForeignKey("mam_settlement_periods.id"), nullable=True)
+    lifetime_master_fee_paid = Column(Numeric(18, 8), nullable=False, default=0)
+    lifetime_admin_fee_paid = Column(Numeric(18, 8), nullable=False, default=0)
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
+
+
+class MAMSettlementPeriod(Base):
+    """One billing period per follower allocation (MAM / signal-provider only).
+
+    During the period, follower trades land on their trading account at gross
+    P&L; master + admin fees accrue only as a calculation. At period close
+    (month_end | unfollow | master_deleted) the net fee is debited from the
+    follower's trading account and credited to the master's main wallet +
+    admin wallet, the period is marked settled, and a fresh active period
+    is started for any still-active allocation.
+    """
+    __tablename__ = "mam_settlement_periods"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    allocation_id = Column(UUID(as_uuid=True), ForeignKey("investor_allocations.id", ondelete="CASCADE"), nullable=False)
+    master_id = Column(UUID(as_uuid=True), ForeignKey("master_accounts.id", ondelete="CASCADE"), nullable=False)
+    period_start = Column(DateTime(timezone=True), nullable=False)
+    period_end = Column(DateTime(timezone=True), nullable=False)
+    performance_fee_pct = Column(Numeric(5, 2), nullable=False)
+    admin_commission_pct = Column(Numeric(5, 2), nullable=False, default=0)
+    starting_balance = Column(Numeric(18, 8), nullable=False)
+    high_water_mark = Column(Numeric(18, 8), nullable=False)
+    total_deposits = Column(Numeric(18, 8), nullable=False, default=0)
+    total_withdrawals = Column(Numeric(18, 8), nullable=False, default=0)
+    ending_balance = Column(Numeric(18, 8), nullable=True)
+    gross_pnl = Column(Numeric(18, 8), nullable=True)
+    performance_fee_charged = Column(Numeric(18, 8), default=0)
+    admin_fee_charged = Column(Numeric(18, 8), default=0)
+    net_pnl_to_follower = Column(Numeric(18, 8), nullable=True)
+    status = Column(String(20), nullable=False, default="active")
+    settle_reason = Column(String(20), nullable=True)
+    settled_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
 
 
