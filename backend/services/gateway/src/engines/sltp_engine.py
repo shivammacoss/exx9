@@ -162,9 +162,11 @@ class SLTPEngine:
             select(TradingAccount).where(TradingAccount.id == pos.account_id)
         )
         account = acct_result.scalar_one_or_none()
+        balance_after_for_tx = None
         if account:
             margin_release = (pos.lots * contract_size * pos.open_price) / Decimal(str(account.leverage))
-            account.balance += profit
+            from ..services.trading_service import apply_position_pnl
+            balance_after_for_tx = await apply_position_pnl(db, account, account.user_id, profit)
             account.margin_used = max(Decimal("0"), (account.margin_used or Decimal("0")) - margin_release)
             account.equity = account.balance + (account.credit or Decimal("0"))
             account.free_margin = account.equity - account.margin_used
@@ -191,7 +193,7 @@ class SLTPEngine:
             account_id=pos.account_id,
             type="profit" if profit >= 0 else "loss",
             amount=profit,
-            balance_after=account.balance if account else None,
+            balance_after=balance_after_for_tx,
             reference_id=pos.id,
             description=f"{reason.upper()} hit: {pos.instrument.symbol if pos.instrument else ''} {side} {pos.lots} lots @ {close_price}",
         )

@@ -15,7 +15,7 @@ from sqlalchemy.orm import selectinload
 from packages.common.src.models import (
     Order, OrderType, OrderSide, OrderStatus, Position, PositionStatus,
     TradingAccount, Instrument, InstrumentConfig,
-    TradeHistory, Transaction, CopyTrade, UserAuditLog, User,
+    TradeHistory, Transaction, CopyTrade, UserAuditLog, User, MasterAccount,
 )
 from packages.common.src.instrument_pricing import resolve_commission
 from packages.common.src.database import AsyncSessionLocal
@@ -32,6 +32,46 @@ logger = logging.getLogger("trading_service")
 # Same Redis key and freshness window used by admin book_service.get_lp_status().
 LP_HEARTBEAT_KEY = "lp:last_batch_at"
 LP_FRESH_WINDOW_MS = 10_000  # 10 seconds
+
+
+async def apply_position_pnl(
+    db: AsyncSession,
+    account: "TradingAccount",
+    user_id: UUID,
+    profit: Decimal,
+) -> Decimal:
+    """Route closed-position P&L to the correct destination.
+
+    MAM / signal-provider master pool accounts route POSITIVE P&L to the
+    master's main_wallet_balance (withdrawable); losses always reduce the
+    trading account so drawdown is absorbed where the trading happens.
+    PAMM pools are excluded — the trading account holds investors' pooled
+    capital, so profits there belong to the pool and must stay on the
+    trading account for the eventual investor distribution.
+    Regular (non-master) accounts: unchanged.
+
+    Returns the balance_after value (wallet or trading account, whichever
+    was updated) for Transaction logging.
+    """
+    master_q = await db.execute(
+        select(MasterAccount).where(
+            MasterAccount.account_id == account.id,
+            MasterAccount.status == "approved",
+            MasterAccount.master_type.in_(["mamm", "signal_provider"]),
+        )
+    )
+    is_master_pool = master_q.scalar_one_or_none() is not None
+
+    if is_master_pool and profit > 0:
+        user = await db.get(User, user_id)
+        if user is not None:
+            user.main_wallet_balance = (
+                user.main_wallet_balance or Decimal("0")
+            ) + profit
+            return user.main_wallet_balance
+
+    account.balance = (account.balance or Decimal("0")) + profit
+    return account.balance
 
 
 async def _is_lp_connected() -> bool:
@@ -871,7 +911,7 @@ async def close_position(position_id: UUID, req, user_id: UUID, db: AsyncSession
         )
         db.add(history)
 
-        account.balance += partial_profit
+        balance_after = await apply_position_pnl(db, account, user_id, partial_profit)
         partial_margin = (close_lots * contract_size * pos.open_price) / Decimal(str(account.leverage))
         account.margin_used = max(Decimal("0"), (account.margin_used or Decimal("0")) - partial_margin)
 
@@ -900,7 +940,7 @@ async def close_position(position_id: UUID, req, user_id: UUID, db: AsyncSession
         )
         db.add(history)
 
-        account.balance += full_profit
+        balance_after = await apply_position_pnl(db, account, user_id, full_profit)
         margin_release = (pos.lots * contract_size * pos.open_price) / Decimal(str(account.leverage))
         account.margin_used = max(Decimal("0"), (account.margin_used or Decimal("0")) - margin_release)
 
@@ -915,7 +955,7 @@ async def close_position(position_id: UUID, req, user_id: UUID, db: AsyncSession
         account_id=account.id,
         type="profit" if result_profit >= 0 else "loss",
         amount=result_profit,
-        balance_after=account.balance,
+        balance_after=balance_after,
         reference_id=pos.id,
         description=f"{'Partial ' if is_partial else ''}Close {pos.instrument.symbol} {sv} {close_lots} lots @ {close_price}",
     )
