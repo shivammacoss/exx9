@@ -10,7 +10,7 @@ import './globals.css'
 import { Toaster } from 'react-hot-toast'
 
 export const metadata: Metadata = {
-  title: 'TrustEdge — Forex CFD Trading Platform',
+  title: 'EXX9 — Forex CFD Trading Platform',
   description: 'Professional forex and CFD trading platform',
 }
 
@@ -47,7 +47,7 @@ No separate header component. The dashboard page has an inline header:
 ```tsx
 <header className="flex items-center justify-between px-6 py-4 border-b border-border bg-bg-secondary">
   <div className="flex items-center gap-4">
-    <h1 className="text-xl font-bold text-text-primary">TrustEdge</h1>
+    <h1 className="text-xl font-bold text-text-primary">EXX9</h1>
     <nav className="flex gap-1 ml-6">
       {[
         { label: 'Dashboard', href: '/dashboard' },
@@ -68,7 +68,7 @@ No separate header component. The dashboard page has an inline header:
     </nav>
   </div>
   <div className="flex items-center gap-3">
-    <span className="text-sm text-text-muted">{user?.email || 'demo@trustedge.com'}</span>
+    <span className="text-sm text-text-muted">{user?.email || 'demo@exx9.com'}</span>
     <Link
       href="/profile"
       className="px-3 py-1.5 text-sm bg-bg-tertiary text-text-primary rounded hover:bg-bg-hover transition"

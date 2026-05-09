@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo, memo } from 'react';
 import { usePathname } from 'next/navigation';
@@ -47,7 +47,7 @@ function buildWidgetEmbedUrl(
     disabled_features: '[]',
     locale: 'en',
     utm_source:
-      typeof window !== 'undefined' ? window.location.hostname || 'trustedge' : 'trustedge',
+      typeof window !== 'undefined' ? window.location.hostname || 'exx9' : 'exx9',
     utm_medium: 'widget',
     utm_campaign: 'chart',
     utm_term: tvSymbol,

@@ -1,13 +1,13 @@
-# TrustEdgeFX — Trading API Documentation
+# EXX9FX — Trading API Documentation
 
-> Public API reference for connecting trading bots and algorithms to the TrustEdgeFX platform.
+> Public API reference for connecting trading bots and algorithms to the EXX9FX platform.
 
 ---
 
 ## Base URL
 
 ```
-https://trustedgefx.com/api/v1
+https://exx9.com/api/v1
 ```
 
 ---
@@ -157,7 +157,7 @@ Optional filters: `symbol`, `side`, `date_from`, `date_to`
 
 ## WebSocket — Live Prices
 
-**URL:** `wss://trustedgefx.com/ws/prices`
+**URL:** `wss://exx9.com/ws/prices`
 
 No authentication required. Streams all symbol ticks continuously.
 
@@ -172,7 +172,7 @@ No authentication required. Streams all symbol ticks continuously.
 
 ## WebSocket — Trade Updates
 
-**URL:** `wss://trustedgefx.com/ws/trades/{account_id}?token=YOUR_JWT`
+**URL:** `wss://exx9.com/ws/trades/{account_id}?token=YOUR_JWT`
 
 Authentication required. Streams position/order events for your account.
 
@@ -228,7 +228,7 @@ import json
 import websocket
 import threading
 
-BASE = "https://trustedgefx.com/api/v1"
+BASE = "https://exx9.com/api/v1"
 
 # Login
 token = requests.post(f"{BASE}/auth/login", json={
@@ -278,7 +278,7 @@ def on_msg(ws, msg):
     print(f"{data['symbol']} {data['bid']}/{data['ask']}")
 
 threading.Thread(target=lambda: websocket.WebSocketApp(
-    "wss://trustedgefx.com/ws/prices", on_message=on_msg
+    "wss://exx9.com/ws/prices", on_message=on_msg
 ).run_forever(), daemon=True).start()
 ```
 

@@ -1,4 +1,4 @@
-# TrustEdgeFX
+# EXX9FX
 
 A premium multi-page Forex brokerage website built with React, Vite, Tailwind CSS, and Framer Motion.
 

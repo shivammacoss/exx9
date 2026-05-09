@@ -12,8 +12,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'TrustEdge Admin',
-  description: 'TrustEdge broker administration panel',
+  title: 'exx9 Admin',
+  description: 'exx9 broker administration panel',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

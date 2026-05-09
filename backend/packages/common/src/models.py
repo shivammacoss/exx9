@@ -864,3 +864,23 @@ class SharedTrade(Base):
     view_count = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=datetime.utcnow)
     expires_at = Column(DateTime(timezone=True), nullable=False)
+
+
+class Lead(Base):
+    """Public lead capture from landing-page Talk-To-Team / Become-Partner forms."""
+    __tablename__ = "leads"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    kind = Column(String(20), nullable=False, index=True)  # contact | partner
+    full_name = Column(String(120), nullable=False)
+    email = Column(String(255), nullable=False, index=True)
+    phone = Column(String(40))
+    company = Column(String(120))
+    website = Column(String(255))
+    partner_type = Column(String(40))
+    message = Column(Text)
+    source = Column(String(60))           # page/section that submitted
+    user_agent = Column(String(255))
+    ip_address = Column(INET)
+    status = Column(String(20), default="new", nullable=False, index=True)  # new | contacted | converted | dismissed
+    created_at = Column(DateTime(timezone=True), default=datetime.utcnow, index=True)

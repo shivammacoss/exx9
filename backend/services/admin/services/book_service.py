@@ -18,11 +18,13 @@ _redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
 _redis = aioredis.from_url(_redis_url, decode_responses=True)
 _redis_prices = aioredis.from_url(_redis_url.rsplit("/", 1)[0] + "/0", decode_responses=True)
 
-# Keys populated by the gateway LP receiver (see api/lp_receiver.py).
-# When Corecen is pushing prices these get updated on every batch.
-LP_HEARTBEAT_KEY = "lp:last_batch_at"      # unix ms of the last accepted batch
-LP_QUEUE_KEY = "lp:incoming_ticks"         # queue drained by market-data service
-LP_FRESH_WINDOW_MS = 10_000                # consider LP "connected" for 10s after last push
+# LP integration was removed when CoreCen was retired. Market data now flows
+# from AllTick (see services/market-data/src/alltick_feed.py); these constants
+# remain only so the legacy /book/lp-status endpoint can return a stable
+# "disabled" payload until the admin UI drops the panel.
+LP_HEARTBEAT_KEY = "lp:last_batch_at"      # unused (always None)
+LP_QUEUE_KEY = "lp:incoming_ticks"         # unused (always 0)
+LP_FRESH_WINDOW_MS = 10_000
 
 
 async def get_book_stats(db: AsyncSession) -> dict:
@@ -165,52 +167,16 @@ async def bulk_change_book_type(
 
 
 async def get_lp_status(db: AsyncSession) -> dict:
-    """Report live LP connection state based on the gateway's LP receiver heartbeat.
-
-    Corecen pushes price batches to `/api/lp/prices/batch`; every accepted batch
-    sets a Redis key with `int(time.time() * 1000)`. If the most recent batch is
-    within LP_FRESH_WINDOW_MS, report CONNECTED so the Book Management badge
-    reflects reality instead of the previous stub.
+    """Stub: LP routing was removed with CoreCen. All trades flow through the
+    internal B-book engine. Endpoint kept for admin UI backward compatibility.
     """
-    settings = get_settings()
-    lp_enabled = bool(getattr(settings, "CORECEN_LP_ENABLED", False))
-    now_ms = int(datetime.utcnow().timestamp() * 1000)
-
-    last_batch_at: int | None = None
-    queue_size: int = 0
-    try:
-        # Gateway writes LP heartbeat to Redis DB 0; admin service may use DB 1,
-        # so always query _redis_prices which is pinned to DB 0.
-        raw = await _redis_prices.get(LP_HEARTBEAT_KEY)
-        if raw is not None:
-            try:
-                last_batch_at = int(raw)
-            except (TypeError, ValueError):
-                last_batch_at = None
-        queue_size = int(await _redis_prices.llen(LP_QUEUE_KEY) or 0)
-    except Exception:
-        # Redis unreachable — treat as disconnected but don't 500.
-        pass
-
-    age_ms = (now_ms - last_batch_at) if last_batch_at else None
-    connected = bool(lp_enabled and age_ms is not None and age_ms <= LP_FRESH_WINDOW_MS)
-
-    if not lp_enabled:
-        message = "CORECEN_LP_ENABLED is false — TrustEdge is not configured to receive LP prices"
-    elif last_batch_at is None:
-        message = "Waiting for Corecen to push the first price batch (check TRUSTEDGE_API_URL + HMAC keys on the Corecen side)"
-    elif connected:
-        message = f"Receiving prices from Corecen ({age_ms} ms since last batch)"
-    else:
-        message = f"Stale — last batch {age_ms} ms ago (threshold {LP_FRESH_WINDOW_MS} ms)"
-
     return {
-        "connected": connected,
-        "lp_enabled": lp_enabled,
-        "last_batch_at_ms": last_batch_at,
-        "last_batch_age_ms": age_ms,
-        "queue_size": queue_size,
-        "message": message,
+        "connected": False,
+        "lp_enabled": False,
+        "last_batch_at_ms": None,
+        "last_batch_age_ms": None,
+        "queue_size": 0,
+        "message": "LP routing disabled — trades use the internal B-book engine. Market data is sourced from AllTick.",
         "last_checked": datetime.utcnow().isoformat(),
     }
 

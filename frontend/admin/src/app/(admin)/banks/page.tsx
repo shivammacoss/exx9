@@ -355,7 +355,7 @@ export default function BanksPage() {
                   {
                     key: 'account_holder',
                     label: 'Account Holder',
-                    placeholder: 'e.g. TrustEdge Pvt Ltd',
+                    placeholder: 'e.g. exx9 Pvt Ltd',
                   },
                   {
                     key: 'account_number',

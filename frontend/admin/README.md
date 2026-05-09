@@ -1,4 +1,4 @@
-# TrustEdge Admin (Next.js)
+# exx9 Admin (Next.js)
 
 ## Run locally
 

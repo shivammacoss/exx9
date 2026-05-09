@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { useTradingStore } from '@/stores/tradingStore';
 import { BRAND_NAME } from '@/lib/brand';
 
 /**
  * Updates the browser tab title with the selected symbol and live price,
- * e.g. "▲ XAUUSD 4,757.37 | TrustEdge". Restores original title on unmount.
+ * e.g. "▲ XAUUSD 4,757.37 | exx9". Restores original title on unmount.
  */
 export function useDocumentTitle() {
   const selectedSymbol = useTradingStore((s) => s.selectedSymbol);

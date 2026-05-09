@@ -200,8 +200,8 @@ export default function TradesPage() {
   const [, forceUpdate] = useState(0);
 
   useEffect(() => {
-    // Resolve gateway WS origin. Admin domain (admin.trustedgefx.com) does NOT
-    // proxy /ws/ — that lives on api.trustedgefx.com — so operators must point
+    // Resolve gateway WS origin. Admin domain (admin.exx9.com) does NOT
+    // proxy /ws/ — that lives on api.exx9.com — so operators must point
     // us there via NEXT_PUBLIC_WS_URL or NEXT_PUBLIC_GATEWAY_URL. Prior code
     // defaulted to ws://localhost:8000 which silently failed in production
     // (mixed-content block on HTTPS + unreachable host) and left the Current /

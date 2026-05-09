@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: Backend (lint + tests)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: exx9
+          POSTGRES_PASSWORD: exx9
+          POSTGRES_DB: exx9_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://exx9:exx9@localhost:5432/exx9_test
+      TIMESCALE_URL: postgresql+asyncpg://exx9:exx9@localhost:5432/exx9_test
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET: test-jwt-secret-do-not-use-in-prod
+      USER_JWT_SECRET: test-user-jwt-secret-do-not-use-in-prod
+      ADMIN_JWT_SECRET: test-admin-jwt-secret-do-not-use-in-prod
+      ADMIN_EMAIL: admin@test.local
+      ADMIN_PASSWORD: TestAdmin2025!
+      ENVIRONMENT: test
+      CORS_ORIGINS: http://localhost:3000
+      COOKIE_SAMESITE: lax
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/services/gateway/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx ruff
+
+      - name: Lint (ruff)
+        run: ruff check backend/ --select=E,F,W --ignore=E501,E402 || true
+
+      - name: Syntax check
+        run: |
+          python -c "
+          import ast, pathlib
+          for p in pathlib.Path('backend').rglob('*.py'):
+              if '__pycache__' in str(p): continue
+              ast.parse(p.read_text())
+          print('All Python files parse cleanly.')
+          "
+
+      - name: Run migrations
+        working-directory: backend
+        run: |
+          export PYTHONPATH=$PWD
+          alembic -c infra/migrations/alembic.ini upgrade head
+
+      - name: Run tests
+        working-directory: backend
+        run: |
+          export PYTHONPATH=$PWD
+          pytest tests/ -v --tb=short
+        continue-on-error: false
+
+  trader-frontend:
+    name: Trader frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/trader
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/trader/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  admin-frontend:
+    name: Admin frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/admin/package-lock.json
+      - run: npm ci
+      - run: npm run lint || true
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'

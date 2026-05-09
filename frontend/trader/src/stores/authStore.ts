@@ -40,7 +40,15 @@ interface AuthState {
 }
 
 /** Session is HttpOnly cookies + optional refresh; Zustand holds UI state only (no secrets). */
-export const useAuthStore = create<AuthState>()((set) => ({
+export const useAuthStore = create<AuthState>()((set, get) => {
+  // When the API client exhausts a refresh attempt mid-session, reset the UI.
+  api.setOnAuthExpired(() => {
+    if (get().isAuthenticated) {
+      useNotificationStore.getState().reset();
+      set({ user: null, token: null, isAuthenticated: false });
+    }
+  });
+  return ({
   user: null,
   token: null,
   isAuthenticated: false,
@@ -127,4 +135,5 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   setInitialized: (val) => set({ isInitialized: val }),
-}));
+});
+});

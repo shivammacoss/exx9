@@ -1,6 +1,8 @@
-"""Feed Handler — Infoway (see `infoway_feed`) when `INFOWAY_API_KEY` is set.
+"""Feed Handler — fallback simulator used when no upstream live feed is configured.
 
-Fallback (no API key): Binance for crypto + GBM simulator for other symbols.
+Crypto symbols are sourced from Binance public WebSocket; everything else uses
+a Geometric Brownian Motion simulator so the platform stays usable for dev /
+demo without an external market-data subscription.
 """
 
 import asyncio
@@ -148,8 +150,15 @@ class FeedSimulator:
     downstream consumers.
     """
 
-    def __init__(self, tick_rate_multiplier: float = 1.0):
+    def __init__(
+        self,
+        tick_rate_multiplier: float = 1.0,
+        exclude_symbols: set[str] | None = None,
+    ):
         self.tick_rate_multiplier = tick_rate_multiplier
+        # Symbols that another feed (e.g. AllTick) is already covering — skip
+        # them so we don't double-publish.
+        self._exclude: set[str] = {s.upper() for s in (exclude_symbols or set())}
 
         self._tick_queue: asyncio.Queue = asyncio.Queue(maxsize=50_000)
         self._running = False
@@ -173,12 +182,26 @@ class FeedSimulator:
     async def start(self):
         """Start live crypto feed + simulated feed for other instruments."""
         self._running = True
-        logger.info(
-            "Feed starting — %d instruments (crypto=LIVE via Binance, rest=simulated)",
-            len(INSTRUMENTS),
+        sim_count = sum(
+            1 for s in INSTRUMENTS
+            if s not in LIVE_CRYPTO_SYMBOLS and s not in self._exclude
         )
+        if self._exclude:
+            logger.info(
+                "Simulator starting — %d instruments simulated, %d skipped (covered upstream): %s",
+                sim_count,
+                len(self._exclude),
+                ", ".join(sorted(self._exclude)),
+            )
+        else:
+            logger.info(
+                "Feed starting — %d instruments (crypto=LIVE via Binance, rest=simulated)",
+                len(INSTRUMENTS),
+            )
 
         for symbol in INSTRUMENTS:
+            if symbol in self._exclude:
+                continue
             if symbol not in LIVE_CRYPTO_SYMBOLS:
                 self._tasks.append(asyncio.create_task(self._symbol_loop(symbol)))
 
@@ -342,6 +365,8 @@ class FeedSimulator:
                             pair = data.get("s", "").lower()
                             symbol = BINANCE_MAP.get(pair)
                             if not symbol:
+                                continue
+                            if symbol in self._exclude:
                                 continue
 
                             price = float(data["p"])

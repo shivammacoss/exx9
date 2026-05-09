@@ -1,20 +1,20 @@
-# TrustEdge-only stack (project name → container/volume prefix). Not tied to ptd2 or other paths.
-name: trustedge
+# EXX9-only stack (project name → container/volume prefix). Not tied to ptd2 or other paths.
+name: exx9
 
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-trustedge}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trustedge_dev}
-      POSTGRES_DB: ${POSTGRES_DB:-trustedge}
+      POSTGRES_USER: ${POSTGRES_USER:-exx9}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-exx9_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-exx9}
     # No host port binding — all services connect via Docker network (postgres:5432)
-    # For local dev access: docker compose exec postgres psql -U trustedge
+    # For local dev access: docker compose exec postgres psql -U exx9
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./backend/infra/docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trustedge"]
+      test: ["CMD-SHELL", "pg_isready -U exx9"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -22,15 +22,15 @@ services:
   timescaledb:
     image: timescale/timescaledb:latest-pg16
     environment:
-      POSTGRES_USER: ${TIMESCALE_USER:-trustedge}
-      POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD:-trustedge_dev}
+      POSTGRES_USER: ${TIMESCALE_USER:-exx9}
+      POSTGRES_PASSWORD: ${TIMESCALE_PASSWORD:-exx9_dev}
       POSTGRES_DB: ${TIMESCALE_DB:-marketdata}
     # No host port binding — all services connect via Docker network (timescaledb:5432)
     volumes:
       - ts_data:/var/lib/postgresql/data
       - ./backend/infra/docker/init-timescale.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U trustedge"]
+      test: ["CMD-SHELL", "pg_isready -U exx9"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -79,7 +79,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      KAFKA_CLUSTERS_0_NAME: trustedge
+      KAFKA_CLUSTERS_0_NAME: exx9
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
 
   # Admin dashboard API (port 8001)
@@ -101,7 +101,7 @@ services:
     environment:
       # Override: shared backend/.env uses REDIS_URL for gateway (db 0); admin service must use db 1
       REDIS_URL: redis://redis:6379/1
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-trustedge}:${POSTGRES_PASSWORD:-trustedge_dev}@postgres:5432/${POSTGRES_DB:-trustedge}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-exx9}:${POSTGRES_PASSWORD:-exx9_dev}@postgres:5432/${POSTGRES_DB:-exx9}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:?Set ADMIN_JWT_SECRET in .env}
       JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
       BANNERS_UPLOAD_DIR: /app/uploads/banners
@@ -145,9 +145,9 @@ services:
       - path: ./.env
         required: false
     environment:
-      # Ensure key is in process env (Compose substitution + container env)
-      INFOWAY_API_KEY: ${INFOWAY_API_KEY:-}
-      INFOWAY_API_URL: ${INFOWAY_API_URL:-https://api.infoway.io}
+      # Ensure AllTick token is in process env (Compose substitution + container env)
+      ALLTICK_API_KEY: ${ALLTICK_API_KEY:-}
+      ALLTICK_ONLY: ${ALLTICK_ONLY:-false}
     depends_on:
       timescaledb:
         condition: service_healthy
@@ -243,7 +243,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://trustedge:trustedge_dev@postgres:5432/trustedge}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://exx9:exx9_dev@postgres:5432/exx9}
     volumes:
       - ./backend:/app
     profiles:

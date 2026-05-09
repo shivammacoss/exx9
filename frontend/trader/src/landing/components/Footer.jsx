@@ -1,149 +1,117 @@
-import { Link } from 'react-router-dom'
-import { Twitter, Linkedin, Instagram, Youtube } from 'lucide-react'
-import ScrollReveal, { ScrollRevealGroup, ScrollRevealItem } from './animations/ScrollReveal'
+﻿'use client'
 
-const Footer = () => {
-  const footerLinks = {
-    trading: [
-      { name: 'Forex', path: '/trading/forex' },
-      { name: 'Commodities', path: '/trading/commodities' },
-      { name: 'Indices', path: '/trading/indices' },
-      { name: 'Crypto', path: '/trading/crypto' },
-    ],
-    platforms: [
-      { name: 'Web Platform', path: '/platforms/web' },
-      { name: 'Copy Trading', path: '/platforms/copy-trading' },
-      { name: 'Prop Trading', path: '/platforms/prop-trading' },
-      { name: 'IB Management', path: '/platforms/ib-management' },
-    ],
-    accounts: [
-      { name: 'Standard', path: '/accounts/standard' },
-      { name: 'Pro', path: '/accounts/pro' },
-      { name: 'Demo', path: '/accounts/demo' },
-    ],
-    company: [
-      { name: 'About Us', path: '/company/about' },
-      { name: 'Why TrustEdgeFX', path: '/company/why-trustedge' },
-      { name: 'Contact', path: '/company/contact' },
-    ],
-    education: [
-      { name: 'Tutorials', path: '/education/tutorials' },
-      { name: 'Blog', path: '/education/blog' },
-      { name: 'Market News', path: '/education/news' },
-    ],
-  }
+import Link from 'next/link'
+import { Twitter, Linkedin, Instagram, Youtube, Send } from "lucide-react"
 
-  const socialLinks = [
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Youtube, href: '#', label: 'YouTube' },
-  ]
+const footerLinks = {
+  platform: {
+    title: "Platform",
+    links: [
+      { label: "Copy Trading", href: "/markets/forex" },
+      { label: "Strategy Library", href: "/tools/trading-platform" },
+      { label: "Backtesting", href: "/tools/heatmap" },
+      { label: "Dashboard", href: "/accounts/types" },
+      { label: "Pricing", href: "/accounts/types" },
+    ],
+  },
+  company: {
+    title: "Company",
+    links: [
+      { label: "About exx9", href: "/about" },
+      { label: "Our Story", href: "/about" },
+      { label: "Careers", href: "/about" },
+      { label: "Press Kit", href: "/about" },
+      { label: "Blog", href: "/blog" },
+    ],
+  },
+  support: {
+    title: "Support",
+    links: [
+      { label: "Help Center", href: "/contact" },
+      { label: "WhatsApp", href: "/contact" },
+      { label: "Contact", href: "/contact" },
+      { label: "Video Tutorials", href: "/blog" },
+      { label: "FAQs", href: "/contact" },
+    ],
+  },
+  legal: {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", href: "/legal/privacy-policy" },
+      { label: "Terms of Use", href: "/legal/terms-of-use" },
+      { label: "Risk Disclosure", href: "/legal/risk-disclosure" },
+      { label: "Cookie Policy", href: "/legal" },
+    ],
+  },
+}
 
+export function Footer() {
   return (
-    <footer className="bg-[#070B15] border-t border-white/5">
-      <div className="container-custom py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
-          {/* Logo & Social */}
-          <div className="col-span-2 md:col-span-3 lg:col-span-1">
-            <ScrollReveal variant="fadeLeft">
-              <Link to="/" className="inline-block mb-4">
-                <img src="/images/logo2.png" alt="TrustEdgeFX" className="h-10 w-auto" />
-              </Link>
-              <p className="text-text-secondary text-sm mb-6">
-                Trade with confidence. Trade with TrustEdgeFX.
-              </p>
-              <ScrollRevealGroup className="flex space-x-3" delay={0.4}>
-                {socialLinks.map((social) => (
-                  <ScrollRevealItem key={social.label}>
-                    <a
-                      href={social.href}
-                      className="w-9 h-9 rounded-md bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all duration-200"
-                      aria-label={social.label}
-                    >
-                      <social.icon className="w-4 h-4 text-text-secondary" />
-                    </a>
-                  </ScrollRevealItem>
-                ))}
-              </ScrollRevealGroup>
-            </ScrollReveal>
-          </div>
-
-          {/* Trading */}
-          <ScrollReveal variant="fadeUp" delay={0.1}>
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4">Trading</h3>
-              <ul className="space-y-2">
-                {footerLinks.trading.map((link) => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-text-secondary text-sm hover:text-white transition-colors duration-200">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </ScrollReveal>
-
-          {/* Platforms */}
-          <ScrollReveal variant="fadeUp" delay={0.15}>
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4">Platforms</h3>
-              <ul className="space-y-2">
-                {footerLinks.platforms.map((link) => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-text-secondary text-sm hover:text-white transition-colors duration-200">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </ScrollReveal>
-
-          {/* Accounts */}
-          <ScrollReveal variant="fadeUp" delay={0.2}>
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4">Accounts</h3>
-              <ul className="space-y-2">
-                {footerLinks.accounts.map((link) => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-text-secondary text-sm hover:text-white transition-colors duration-200">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </ScrollReveal>
-
-          {/* Company */}
-          <ScrollReveal variant="fadeUp" delay={0.25}>
-            <div>
-              <h3 className="text-white font-semibold text-sm mb-4">Company</h3>
-              <ul className="space-y-2">
-                {footerLinks.company.map((link) => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-text-secondary text-sm hover:text-white transition-colors duration-200">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-              <h3 className="text-white font-semibold text-sm mt-6 mb-4">Education</h3>
-              <ul className="space-y-2">
-                {footerLinks.education.map((link) => (
-                  <li key={link.path}>
-                    <Link to={link.path} className="text-text-secondary text-sm hover:text-white transition-colors duration-200">{link.name}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </ScrollReveal>
-        </div>
-
-        <ScrollReveal variant="fadeIn" delay={0.5}>
-          <div className="pt-8 border-t border-white/5">
-            <p className="text-text-secondary text-xs text-center">
-              © 2025 TrustEdgeFX Ltd. All rights reserved. | Risk Warning: Trading involves significant risk of loss.
+    <footer className="bg-foreground text-white">
+      {/* Main Footer */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+          {/* Logo Column */}
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
+            <Link href="/" className="flex items-center mb-6">
+              <img src="/images/exx9_logo_dark.png"
+                alt="exx9"
+                width={140}
+                height={36}
+                className="h-9 w-auto brightness-0 invert" />
+            </Link>
+            <p className="text-sm text-white/70 mb-6 max-w-xs">
+              Honest trading for real people.
             </p>
+            {/* Social Links */}
+            <div className="flex gap-3">
+              {[Twitter, Instagram, Linkedin, Send, Youtube].map((Icon, index) => (
+                <Link
+                  key={index}
+                  href="#"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-primary transition-colors"
+                >
+                  <Icon className="w-5 h-5" />
+                </Link>
+              ))}
+            </div>
           </div>
-        </ScrollReveal>
+
+          {/* Footer Links */}
+          {Object.entries(footerLinks).map(([key, section]) => (
+            <div key={key}>
+              <h4 className="font-semibold mb-4">{section.title}</h4>
+              <ul className="space-y-2">
+                {section.links.map((link, index) => (
+                  <li key={index}>
+                    <Link href={link.href} className="text-sm text-white/60 hover:text-primary transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Risk Warning */}
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <p className="text-xs text-white/60 leading-relaxed text-center">
+            <strong className="text-yellow-400">Risk Warning:</strong> Trading involves risk. Capital can be lost. Please trade responsibly.
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom Strip */}
+      <div className="border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <p className="text-xs text-white/40 text-center">
+            © {new Date().getFullYear()} exx9. All rights reserved. <span className="mx-2">|</span> Made in India 🇮🇳
+          </p>
+        </div>
       </div>
     </footer>
   )
 }
-
-export default Footer

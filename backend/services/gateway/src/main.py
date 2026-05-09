@@ -1,4 +1,4 @@
-"""TrustEdge Gateway — REST + WebSocket API Server."""
+"""EXX9 Gateway — REST + WebSocket API Server."""
 import asyncio
 import json
 import logging
@@ -21,8 +21,8 @@ from packages.common.src.instrumentation import init_sentry, add_middleware_stac
 from .api import (
     auth, orders, positions, accounts, instruments, deposits, webhooks,
     websocket_manager, social, business, portfolio, profile, support,
-    notifications, banners, trading_catalog, followers, lp_receiver,
-    algo_connector, algo_keys, algo_market_data, share,
+    notifications, banners, trading_catalog, followers,
+    algo_connector, algo_keys, algo_market_data, share, leads,
 )
 from .engines.sltp_engine import sltp_engine
 from .engines.copy_engine import copy_engine
@@ -89,7 +89,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="TrustEdge Gateway",
+    title="EXX9 Gateway",
     version="1.0.0",
     description="Forex CFD B-Book Trading Platform API",
     lifespan=lifespan,
@@ -127,14 +127,12 @@ app.include_router(banners.media_router, prefix="/api/v1/banners", tags=["Banner
 app.include_router(banners.router, prefix="/api/v1/banners", tags=["Banners"])
 app.include_router(followers.router, prefix="/api/v1/followers", tags=["Followers"])
 app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
-# Corecen LP price push receiver — HMAC-secured, public (no JWT). Path mirrors
-# Corecen's sender (axios POST baseURL + '/api/lp/prices/batch').
-app.include_router(lp_receiver.router, prefix="/api/lp", tags=["LP Receiver"])
 app.include_router(algo_connector.router, prefix="/api/algo", tags=["Algo Connector"])
 app.include_router(algo_market_data.router, prefix="/api/algo", tags=["Algo Market Data"])
 app.include_router(algo_keys.router, prefix="/api/v1/algo", tags=["Algo Keys"])
 app.include_router(share.router, prefix="/api/v1", tags=["Share Trade"])
 app.include_router(share.public_router, prefix="/api/v1/public", tags=["Public Share"])
+app.include_router(leads.router, prefix="/api/v1/public", tags=["Public Leads"])
 
 
 @app.get("/health")

@@ -6,8 +6,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
-    DATABASE_URL: str = "postgresql+asyncpg://trustedge:trustedge_dev@localhost:5432/trustedge"
-    TIMESCALE_URL: str = "postgresql+asyncpg://trustedge:trustedge_dev@localhost:5433/marketdata"
+    DATABASE_URL: str = "postgresql+asyncpg://exx9:exx9_dev@localhost:5432/exx9"
+    TIMESCALE_URL: str = "postgresql+asyncpg://exx9:exx9_dev@localhost:5433/marketdata"
     REDIS_URL: str = "redis://localhost:6379/0"
     KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
 
@@ -39,8 +39,8 @@ class Settings(BaseSettings):
     ADMIN_JWT_ALGORITHM: str = "HS256"
     ADMIN_JWT_EXPIRY_HOURS: int = 8
 
-    ADMIN_EMAIL: str = "admin@trustedge.com"
-    ADMIN_PASSWORD: str = "TrustEdgeAdmin2025!"
+    ADMIN_EMAIL: str = "admin@exx9.com"
+    ADMIN_PASSWORD: str = "EXX9Admin2025!"
     USER_JWT_SECRET: str = "dev-secret-change-in-production"
     USER_JWT_ALGORITHM: str = "HS256"
 
@@ -59,27 +59,16 @@ class Settings(BaseSettings):
     SMTP_FROM: str = ""
     SMTP_USE_TLS: bool = True
 
-    # Market data provider (Infoway.io) — fallback when Corecen LP not configured
-    INFOWAY_API_KEY: str = ""
-    INFOWAY_API_URL: str = "https://api.infoway.io"
-
-    # Corecen LP (primary market data source). When CORECEN_LP_ENABLED=true the
-    # market-data service stops running its own Infoway / simulator feed and
-    # consumes ticks pushed from Corecen via POST /api/lp/prices/batch (HMAC).
-    CORECEN_LP_ENABLED: bool = False
-    # HMAC credentials — must match TRUSTEDGE_API_KEY / TRUSTEDGE_API_SECRET in the Corecen .env.
-    CORECEN_LP_API_KEY: str = ""
-    CORECEN_LP_API_SECRET: str = ""
-    # Reject pushes older than this many ms (same tolerance as Corecen's HMAC middleware).
-    CORECEN_LP_TIMESTAMP_TOLERANCE_MS: int = 60_000
-
-    # Corecen Broker API (A-Book trade forwarding). When an A-Book user opens/closes
-    # a position, TrustEdge pushes the trade to Corecen's broker API for LP routing.
-    # These credentials are the API key/secret registered in Corecen's admin panel
-    # for the TrustEdge broker account.
-    CORECEN_BROKER_API_URL: str = ""       # e.g. https://api.corecen.com
-    CORECEN_BROKER_API_KEY: str = ""       # ck_... from Corecen broker API keys
-    CORECEN_BROKER_API_SECRET: str = ""    # cs_... from Corecen broker API keys
+    # Market data provider — AllTick (https://alltick.co). Token is appended to
+    # the WebSocket URL as ?token=...; HTTP /kline calls use the same token.
+    # Free tier: ~5 codes per WS connection, 1 active subscription.
+    ALLTICK_API_KEY: str = ""
+    ALLTICK_HTTP_URL: str = "https://quote.alltick.co/quote-b-api"
+    ALLTICK_WS_URL: str = "wss://quote.alltick.co/quote-b-ws-api"
+    # Production switch: refuse to fall back to the built-in simulator when
+    # AllTick disconnects or doesn't cover a symbol. Symbols outside the plan
+    # will simply have no ticks (better than showing fake prices).
+    ALLTICK_ONLY: bool = False
 
     MARGIN_CALL_LEVEL: float = 80.0
     STOP_OUT_LEVEL: float = 50.0
@@ -106,7 +95,7 @@ class Settings(BaseSettings):
     # in the Google Cloud Console for this OAuth client.
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
-    GOOGLE_OAUTH_REDIRECT_URI: str = ""  # e.g. https://api.trustedgefx.com/api/v1/auth/google/callback
+    GOOGLE_OAUTH_REDIRECT_URI: str = ""  # e.g. https://api.exx9.com/api/v1/auth/google/callback
 
     # OxaPay crypto payment gateway
     OXAPAY_MERCHANT_KEY: str = ""
@@ -120,6 +109,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 
 @lru_cache()

@@ -2,6 +2,9 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  safelist: [
+    { pattern: /^(bg|text|border|from|to|via|ring|fill|stroke)-(primary|secondary|accent|muted|destructive|background|foreground|card|popover|input|border|ring)(\/\d+)?$/ },
+  ],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
@@ -22,8 +25,10 @@ const config: Config = {
         card: {
           DEFAULT: 'var(--bg-card)',
           nested: 'var(--bg-card-nested)',
+          foreground: 'hsl(var(--card-foreground, 240 10% 4%))',
         },
         border: {
+          DEFAULT: 'hsl(var(--border, 240 5% 90%))',
           primary: 'var(--border-primary)',
           secondary: 'var(--border-secondary)',
           accent: 'var(--border-accent)',
@@ -50,7 +55,15 @@ const config: Config = {
           bg: 'rgba(239,68,68,0.1)',
           glow: 'rgba(239,68,68,0.2)',
         },
-        accent: { DEFAULT: '#2196f3', light: '#64b5f6', dark: '#1976d2' },
+        accent: { DEFAULT: 'hsl(var(--accent, 207 90% 54%))', foreground: 'hsl(var(--accent-foreground, 0 0% 100%))', light: '#64b5f6', dark: '#1976d2' },
+        /* shadcn-compatible color tokens (driven by CSS vars; scoped overrides in landing.css) */
+        background: 'hsl(var(--background, 0 0% 100%))',
+        foreground: 'hsl(var(--foreground, 240 10% 4%))',
+        muted: { DEFAULT: 'hsl(var(--muted, 210 40% 96%))', foreground: 'hsl(var(--muted-foreground, 215 16% 47%))' },
+        popover: { DEFAULT: 'hsl(var(--popover, 0 0% 100%))', foreground: 'hsl(var(--popover-foreground, 240 10% 4%))' },
+        destructive: { DEFAULT: 'hsl(var(--destructive, 0 84% 60%))', foreground: 'hsl(var(--destructive-foreground, 0 0% 100%))' },
+        input: 'hsl(var(--input, 240 5% 90%))',
+        ring: 'hsl(var(--ring, 240 5% 64%))',
         success: '#1976d2',
         warning: '#FFB300',
         info: '#29B6F6',
@@ -64,12 +77,18 @@ const config: Config = {
           purple: '#9775FA',
           pink: '#F06595',
         },
-        /* Landing-page palette */
+        /* Landing-page palette + shadcn primary */
         'primary': {
+          DEFAULT: 'hsl(var(--primary, 207 90% 54%))',
+          foreground: 'hsl(var(--primary-foreground, 0 0% 100%))',
           bg: '#0A0E1A',
           secondary: '#0F1628',
           accent: '#1A56FF',
           purple: '#7B2FFF',
+        },
+        secondary: {
+          DEFAULT: 'hsl(var(--secondary, 240 5% 96%))',
+          foreground: 'hsl(var(--secondary-foreground, 240 6% 10%))',
         },
       },
       backgroundImage: {

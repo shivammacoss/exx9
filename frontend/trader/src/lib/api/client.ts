@@ -1,4 +1,4 @@
-const DEFAULT_SERVER_API = 'http://127.0.0.1:8000/api/v1';
+﻿const DEFAULT_SERVER_API = 'http://127.0.0.1:8000/api/v1';
 
 /** Base URL for REST calls.
  *  Browser: direct to gateway (NEXT_PUBLIC_GATEWAY_URL) if set, otherwise same-origin proxy.
@@ -36,6 +36,12 @@ class ApiClient {
   /** In-memory Bearer override (rare; cookies are primary for the trader web app). */
   private token: string | null = null;
 
+  /** Coalesce concurrent refresh attempts so a burst of 401s only triggers one /auth/refresh call. */
+  private refreshInflight: Promise<boolean> | null = null;
+
+  /** Optional callback fired when refresh fails — lets the auth store clear UI state. */
+  private onAuthExpired: (() => void) | null = null;
+
   setToken(token: string) {
     this.token = token;
   }
@@ -44,16 +50,46 @@ class ApiClient {
     return this.token;
   }
 
+  setOnAuthExpired(handler: (() => void) | null) {
+    this.onAuthExpired = handler;
+  }
+
   clearToken() {
     this.token = null;
     if (typeof window !== 'undefined') {
       try {
         localStorage.removeItem('token');
-        localStorage.removeItem('trustedge-auth');
+        localStorage.removeItem('exx9-auth');
       } catch {
         /* ignore */
       }
     }
+  }
+
+  /** Attempt a single /auth/refresh; concurrent callers share the same in-flight promise. */
+  private refreshSession(): Promise<boolean> {
+    if (this.refreshInflight) return this.refreshInflight;
+    const API_BASE = getApiBase();
+    const url = API_BASE.startsWith('http')
+      ? `${API_BASE.replace(/\/$/, '')}/auth/refresh`
+      : `${API_BASE}/auth/refresh`;
+    this.refreshInflight = (async () => {
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: '{}',
+        });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        // Release the lock on the next microtask so other callers see this attempt's result.
+        setTimeout(() => { this.refreshInflight = null; }, 0);
+      }
+    })();
+    return this.refreshInflight;
   }
 
   private async request<T>(
@@ -63,6 +99,7 @@ class ApiClient {
     params?: Record<string, string>,
     options?: ApiRequestOptions,
     _retry429: number = 0,
+    _retried401: boolean = false,
   ): Promise<T> {
     const API_BASE = getApiBase();
     let url: string;
@@ -145,11 +182,22 @@ class ApiClient {
         ? Math.min(5000, retryAfterSec * 1000)
         : Math.min(4000, 400 * Math.pow(2, _retry429));
       await new Promise((r) => setTimeout(r, delay));
-      return this.request<T>(method, path, body, params, options, _retry429 + 1);
+      return this.request<T>(method, path, body, params, options, _retry429 + 1, _retried401);
     }
 
     if (res.status === 401) {
+      // Don't try to refresh on auth endpoints themselves — they'll loop or mask login errors.
+      const isAuthEndpoint = path.startsWith('/auth/');
+      if (!_retried401 && !isAuthEndpoint) {
+        const refreshed = await this.refreshSession();
+        if (refreshed) {
+          return this.request<T>(method, path, body, params, options, _retry429, true);
+        }
+      }
       this.clearToken();
+      if (this.onAuthExpired) {
+        try { this.onAuthExpired(); } catch { /* ignore */ }
+      }
       const error = await res.json().catch(() => ({}));
       const detail = (error as { detail?: unknown }).detail;
       const msg =

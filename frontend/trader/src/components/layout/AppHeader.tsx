@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -82,8 +82,8 @@ export default function AppHeader() {
           aria-label="Toggle menu"
         >
           <img
-            src="/images/Trustedgefx logo.png"
-            alt="TrustEdgeFX"
+            src="/images/exx9 logo.png"
+            alt="exx9"
             className="w-10 h-10 object-contain"
           />
         </button>

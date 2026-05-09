@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { label: 'PAMM', href: '/pamm', icon: TrendingUp },
   { label: 'MAMM', href: '/social', icon: Copy },
   { label: 'Affiliates', href: '/business', icon: Users },
-  { label: 'TrustEdge Academy', href: '/academy', icon: GraduationCap },
+  { label: 'exx9 Academy', href: '/academy', icon: GraduationCap },
   { label: 'Economic News', href: '/news', icon: Newspaper },
   { label: 'Risk Management', href: '/risk-calculator', icon: Calculator },
   { label: 'Algo Connector', href: '/algo-connector', icon: Plug },
@@ -67,7 +67,7 @@ export default function AppSidebar() {
         <div className="flex items-center justify-between px-4 pt-4 pb-3 gap-2">
           <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-baseline font-bold italic tracking-tight text-xl select-none">
-              <span className="text-text-primary">TrustEdge</span>
+              <span className="text-text-primary">exx9</span>
               <span className="text-[#2196f3]">FX</span>
             </span>
           </Link>

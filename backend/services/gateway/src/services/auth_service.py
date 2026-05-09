@@ -26,7 +26,7 @@ from packages.common.src.auth import (
 
 logger = logging.getLogger("auth_service")
 
-DEMO_SHARED_EMAIL = "demo@trustedge.com"
+DEMO_SHARED_EMAIL = "demo@exx9.com"
 DEMO_STARTING_BALANCE = Decimal("10000")
 
 _rate_buckets: dict[str, list[float]] = {}
@@ -74,9 +74,44 @@ def client_ip_for_inet(request: Request) -> str | None:
 
 # ─── Utility: rate limiting ──────────────────────────────────────────────
 
+async def rate_limit_redis(request: Request, bucket: str, max_requests: int, window_sec: float) -> None:
+    """Per-IP fixed-window rate limit backed by Redis.
+
+    Auth routes (login/register/refresh) need defense-in-depth against
+    credential stuffing even though Nginx already throttles at the edge.
+    Keying by IP (not user_id) avoids the bug from the previous in-memory
+    implementation where one user's tab hammering refresh would lock them
+    out of valid sessions.
+
+    Soft-fails on Redis errors so a Redis blip can't lock everyone out.
+    """
+    from packages.common.src.redis_client import redis_client
+    ip = client_ip_for_inet(request) or "unknown"
+    window_id = int(monotonic() // window_sec)
+    key = f"ratelimit:{bucket}:{ip}:{window_id}"
+    try:
+        count = await redis_client.incr(key)
+        if count == 1:
+            await redis_client.expire(key, int(window_sec) + 5)
+        if count > max_requests:
+            raise AuthServiceError(
+                "Too many requests — please slow down and try again shortly.",
+                status_code=429,
+            )
+    except AuthServiceError:
+        raise
+    except Exception as exc:
+        logger.warning("rate_limit soft-fail (%s): %s", bucket, exc)
+
+
 def rate_limit_http(request: Request, bucket: str, max_requests: int, window_sec: float) -> None:
-    # Rate limiting fully disabled — users hit 429s under normal load even with
-    # valid sessions. No-op retained so existing call sites keep compiling.
+    """Synchronous shim retained for legacy call sites.
+
+    The original in-memory implementation locked users out under normal
+    load. Most call sites now use the async ``rate_limit_redis`` directly.
+    Sites still calling this sync version get the no-op behavior to avoid
+    breaking flows; migrate them over time.
+    """
     _ = (request, bucket, max_requests, window_sec)
     return None
 
@@ -232,7 +267,7 @@ async def register_user(
 ) -> JSONResponse:
     from packages.common.src.settings_store import get_bool_setting
 
-    rate_limit_http(request, "register", 15, 3600.0)
+    await rate_limit_redis(request, "register", 15, 3600.0)
     if await get_bool_setting("maintenance_mode", False):
         raise AuthServiceError(
             "Platform is under maintenance. Registrations are temporarily disabled.", 503
@@ -281,7 +316,7 @@ async def login_user(
     request: Request,
     db: AsyncSession,
 ) -> JSONResponse:
-    rate_limit_http(request, "login", 40, 60.0)
+    await rate_limit_redis(request, "login", 40, 60.0)
     email = (email or "").strip().lower()
     result = await db.execute(
         select(User).where(func.lower(User.email) == email)
@@ -398,7 +433,7 @@ async def _ensure_demo_trading_account(db: AsyncSession, user: User) -> None:
 
 
 async def demo_login(request: Request, db: AsyncSession) -> JSONResponse:
-    rate_limit_http(request, "demo-login", 30, 60.0)
+    await rate_limit_redis(request, "demo-login", 30, 60.0)
     user = await _ensure_shared_demo_user(db)
     await _ensure_demo_trading_account(db, user)
     if user.status == "banned":
@@ -411,7 +446,7 @@ async def demo_login(request: Request, db: AsyncSession) -> JSONResponse:
 # ─── Token refresh ────────────────────────────────────────────────────────
 
 async def refresh_token(request: Request, db: AsyncSession) -> JSONResponse:
-    rate_limit_http(request, "auth-refresh", 60, 60.0)
+    await rate_limit_redis(request, "auth-refresh", 60, 60.0)
     st = get_settings()
     raw = request.cookies.get(st.REFRESH_TOKEN_COOKIE_NAME)
     if not raw or not raw.strip():
@@ -439,7 +474,7 @@ async def refresh_token(request: Request, db: AsyncSession) -> JSONResponse:
 # ─── Bootstrap session ────────────────────────────────────────────────────
 
 async def bootstrap_session(access_token: str, request: Request, db: AsyncSession) -> JSONResponse:
-    rate_limit_http(request, "bootstrap-session", 30, 3600.0)
+    await rate_limit_redis(request, "bootstrap-session", 30, 3600.0)
     try:
         payload = decode_token(access_token.strip())
     except Exception:
@@ -461,7 +496,7 @@ async def bootstrap_session(access_token: str, request: Request, db: AsyncSessio
 # ─── Forgot / Reset password ─────────────────────────────────────────────
 
 async def forgot_password(email: str, request: Request, db: AsyncSession) -> dict:
-    rate_limit_http(request, "forgot-password", 5, 600.0)
+    await rate_limit_redis(request, "forgot-password", 5, 600.0)
     msg = {"message": "If an account exists for this email, you will receive password reset instructions shortly."}
     email = (email or "").strip().lower()
     result = await db.execute(
@@ -497,7 +532,7 @@ async def forgot_password(email: str, request: Request, db: AsyncSession) -> dic
 
 
 async def reset_password(token: str, new_password: str, request: Request, db: AsyncSession) -> dict:
-    rate_limit_http(request, "reset-password", 20, 600.0)
+    await rate_limit_redis(request, "reset-password", 20, 600.0)
     token_hash = hash_token(token.strip())
     now = datetime.now(timezone.utc)
     result = await db.execute(
@@ -526,7 +561,7 @@ async def setup_2fa(user_id: UUID, db: AsyncSession) -> dict:
     user = result.scalar_one_or_none()
     secret = pyotp.random_base32()
     totp = pyotp.TOTP(secret)
-    provisioning_uri = totp.provisioning_uri(name=user.email, issuer_name="TrustEdge")
+    provisioning_uri = totp.provisioning_uri(name=user.email, issuer_name="EXX9")
     user.two_factor_secret = secret
     await db.commit()
     return {"secret": secret, "qr_uri": provisioning_uri}

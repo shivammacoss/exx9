@@ -43,4 +43,9 @@ class ConnectionManager:
         if msg_type == "ping":
             await self.send_to_account(account_id, {"type": "pong"})
         elif msg_type == "subscribe":
-            pass
+            # Trade events are scoped per-account by connection, so the channel
+            # is implicit. Ack so clients know the subscribe was received.
+            await self.send_to_account(
+                account_id,
+                {"type": "subscribed", "account_id": account_id},
+            )

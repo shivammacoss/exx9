@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { TrustEdgeWordmark } from '@/components/layout/TrustEdgeWordmark';
+import { Exx9Wordmark } from '@/components/layout/Exx9Wordmark';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { wsManager, ConnectionStatus } from '@/lib/ws/wsManager';
 import { useAuthStore } from '@/stores/authStore';
@@ -81,7 +81,7 @@ export default function TopBar() {
 
         {/* Brand — left anchor */}
         <div className="shrink-0 z-20 min-w-0 max-w-[min(52%,12rem)] sm:max-w-[14rem] md:max-w-none flex items-center h-7 sm:h-9 lg:h-[52px]">
-          <TrustEdgeWordmark
+          <Exx9Wordmark
             href="/dashboard"
             className="items-center"
             textClassName="text-lg sm:text-xl lg:text-3xl lg:leading-none"

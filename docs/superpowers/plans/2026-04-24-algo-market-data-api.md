@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Extend the existing TrustEdge algo API so the same `X-Api-Key` + `X-Api-Secret` that places trades also delivers full market data (live WebSocket stream, snapshot REST, historical OHLC bars, symbol list) — sourced from the same LP pipeline that feeds the internal frontend.
+**Goal:** Extend the existing EXX9 algo API so the same `X-Api-Key` + `X-Api-Secret` that places trades also delivers full market data (live WebSocket stream, snapshot REST, historical OHLC bars, symbol list) — sourced from the same LP pipeline that feeds the internal frontend.
 
 **Architecture:** Reuse the existing Redis `prices` pub/sub channel, `tick:{symbol}` hot cache, and TimescaleDB hypertable. Add one WebSocket route with first-message auth, and four REST routes that delegate to the existing `validate_api_credentials()` helper. Zero DB migrations; zero changes to LP ingestion or market-data service.
 
@@ -1547,7 +1547,7 @@ Smoke test for algo market data API.
 Usage:
   export ALGO_API_KEY=ak_...
   export ALGO_API_SECRET=sk_...
-  export ALGO_BASE=https://staging.trustedgefx.com
+  export ALGO_BASE=https://staging.exx9.com
   python scripts/smoke_algo_market_data.py
 """
 import asyncio
@@ -1685,8 +1685,8 @@ import json
 import websockets
 import requests
 
-BASE = "https://trustedgefx.com/api/algo"
-WS_URL = "wss://trustedgefx.com/ws/algo/prices"
+BASE = "https://exx9.com/api/algo"
+WS_URL = "wss://exx9.com/ws/algo/prices"
 HEADERS = {"X-Api-Key": "YOUR_KEY", "X-Api-Secret": "YOUR_SECRET", "Content-Type": "application/json"}
 
 # Bootstrap: load symbol specs + initial snapshot
@@ -1735,7 +1735,7 @@ Not code — a manual checklist to run after merge.
 - [ ] **Staging smoke test**
 
 ```bash
-export ALGO_BASE=https://staging.trustedgefx.com
+export ALGO_BASE=https://staging.exx9.com
 export ALGO_API_KEY=<your personal staging key>
 export ALGO_API_SECRET=<your personal staging secret>
 python scripts/smoke_algo_market_data.py
@@ -1746,7 +1746,7 @@ Expected: all 5 checks pass.
 
 Share staging URL + key with partner. Monitor:
 ```bash
-docker logs trustedge-gateway -f | grep "algo"
+docker logs exx9-gateway -f | grep "algo"
 ```
 Check for: no 5xx errors, tick fanout latency < 100ms, no heartbeat timeouts.
 

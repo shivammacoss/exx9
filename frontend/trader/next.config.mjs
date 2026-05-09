@@ -20,16 +20,10 @@ const nextConfig = {
       staleTimes: { dynamic: 0, static: 0 },
     },
   }),
-  webpack: (config) => {
-    config.resolve.alias['react-router-dom'] = path.resolve(__dirname, 'src/landing/router-shim.tsx');
-    return config;
-  },
-  /* Turbopack ignores the webpack hook above — duplicate the alias here so
-     `next dev --turbo` also resolves react-router-dom to our local shim. */
+  /* Pin the Turbopack workspace root to this project so it doesn't walk up
+     to the legacy lockfile in trustedge/. */
   turbopack: {
-    resolveAlias: {
-      'react-router-dom': './src/landing/router-shim.tsx',
-    },
+    root: __dirname,
   },
   /** Set NEXT_PUBLIC_APP_VERSION at Docker build so each deploy gets new `_next/static` hashes. */
   generateBuildId: async () => {

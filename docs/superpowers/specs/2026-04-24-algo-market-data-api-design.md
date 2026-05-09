@@ -6,9 +6,9 @@
 
 ## 1. Problem
 
-TrustEdge currently exposes a minimal algo API (`POST /api/algo/trade`, `GET /api/algo/account`) that lets an external bot place trades and read account state using an `X-Api-Key` + `X-Api-Secret` pair tied to a single trading account.
+EXX9 currently exposes a minimal algo API (`POST /api/algo/trade`, `GET /api/algo/account`) that lets an external bot place trades and read account state using an `X-Api-Key` + `X-Api-Secret` pair tied to a single trading account.
 
-An external partner running their own algo bot wants their bot's dashboard to display the **same live market data** that the TrustEdge frontend shows — live ticks, snapshots, and historical OHLC bars — so both sides are reading the exact same LP-sourced prices (with spread widening already applied).
+An external partner running their own algo bot wants their bot's dashboard to display the **same live market data** that the EXX9 frontend shows — live ticks, snapshots, and historical OHLC bars — so both sides are reading the exact same LP-sourced prices (with spread widening already applied).
 
 No separate feed, no separate auth. The same `X-Api-Key` + `X-Api-Secret` should also unlock market data.
 
@@ -170,7 +170,7 @@ LIMIT :limit;
 ### 5.5 WebSocket — live tick stream
 
 ```
-Connect: wss://trustedgefx.com/ws/algo/prices
+Connect: wss://exx9.com/ws/algo/prices
 (no headers, no query params at connect time)
 ```
 

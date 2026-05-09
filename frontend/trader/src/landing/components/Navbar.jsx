@@ -1,390 +1,126 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from "react"
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  TrendingUp, BarChart2, Monitor, User, DollarSign,
-  Wrench, BookOpen, Info, Mail, Menu, X, Shield, Lock,
-  ChevronDown
-} from 'lucide-react'
-import { usePopup } from './PopupContext'
+import { Menu, X, ArrowRight } from "lucide-react"
+import { Button } from "@/landing/components/ui/button"
+import { LoginDialog, OpenAccountDialog } from "@/landing/components/auth-dialogs"
 
-const navItems = [
-  { label: 'Home',        path: '/',                  icon: <TrendingUp size={16} /> },
-  { label: 'Trading',     path: '/trading/forex',      icon: <BarChart2 size={16} /> },
-  {
-    label: 'Platforms',
-    icon: <Monitor size={16} />,
-    dropdown: [
-      { name: 'Web Platform', path: '/platforms/web' },
-      { name: 'Copy Trading', path: '/platforms/copy-trading' },
-      { name: 'Prop Trading', path: '/platforms/prop-trading' },
-      { name: 'IB Management', path: '/platforms/ib-management' },
-    ]
-  },
-  {
-    label: 'Accounts',
-    icon: <User size={16} />,
-    dropdown: [
-      { name: 'Standard', path: '/accounts/standard' },
-      { name: 'Pro', path: '/accounts/pro' },
-      { name: 'Demo', path: '/accounts/demo' },
-    ]
-  },
-  { label: 'Education',   path: '/education/tutorials', icon: <BookOpen size={16} /> },
-  { label: 'About',       path: '/company/about',      icon: <Info size={16} /> },
-  { label: 'Contact',     path: '/company/contact',    icon: <Mail size={16} /> },
+const navLinks = [
+  { href: "/markets/forex", label: "Trading" },
+  { href: "/tools/trading-platform", label: "Features" },
+  { href: "/accounts/types", label: "Pricing" },
+  { href: "/partnership", label: "Community" },
+  { href: "/about", label: "About Us" },
 ]
 
-const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [activeDropdown, setActiveDropdown] = useState(null)
-  const [mobileDropdown, setMobileDropdown] = useState(null)
-  const pathname = usePathname()
-  const menuRef = useRef(null)
-  const { openPopup } = usePopup()
+export function Navbar() {
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  useEffect(() => { setIsOpen(false) }, [pathname])
-
-  useEffect(() => {
-    if (!isOpen) return
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setIsOpen(false)
-    }
-    // Delay listener to avoid closing immediately on the same tap that opened it
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside)
-      document.addEventListener('touchstart', handleClickOutside)
-    }, 100)
-    return () => {
-      clearTimeout(timer)
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('touchstart', handleClickOutside)
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    document.body.style.overflow = isOpen || isLoginOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  }, [isOpen, isLoginOpen])
-
-  const isActive = (path) => pathname === path
-  const isDropdownActive = (dropdown) => dropdown?.some(d => pathname?.startsWith(d.path))
-
   return (
-    <>
-      <motion.nav
-        initial={{ y: -100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        ref={menuRef}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled || isOpen
-            ? 'bg-primary-bg/85 backdrop-blur-xl border-b border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]'
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="container-custom">
-          <div className="flex items-center justify-between h-16 md:h-[72px]">
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm" : "bg-white/70 backdrop-blur-md border-b border-emerald-100/60"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 lg:h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <img src="/images/exx9_logo_dark.png"
+              alt="exx9"
+              width={140}
+              height={36}
+              className="h-8 sm:h-9 w-auto" />
+          </Link>
 
-            {/* Logo */}
-            <Link href="/" className="flex items-center flex-shrink-0 group">
-              <img
-                src="/images/logo2.png"
-                alt="TrustEdgeFX"
-                className="h-12 w-auto object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_12px_rgba(26,86,255,0.6)]"
-              />
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5">
-              {navItems.map((item) =>
-                item.dropdown ? (
-                  <div
-                    key={item.label}
-                    className="relative"
-                    onMouseEnter={() => setActiveDropdown(item.label)}
-                    onMouseLeave={() => setActiveDropdown(null)}
-                  >
-                    <button
-                      className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                        isDropdownActive(item.dropdown)
-                          ? 'text-primary-accent bg-primary-accent/[0.08]'
-                          : 'text-slate-300 hover:text-white hover:bg-white/5'
-                      }`}
-                    >
-                      {item.label}
-                      <ChevronDown size={13} className={`transition-transform duration-200 ${activeDropdown === item.label ? 'rotate-180' : ''}`} />
-                    </button>
-                    <div className={`absolute top-full left-0 mt-2 w-44 bg-primary-bg/95 backdrop-blur-xl border border-white/10 rounded-xl p-1.5 transition-all duration-200 shadow-[0_8px_30px_rgba(0,0,0,0.5)] ${
-                      activeDropdown === item.label ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
-                    }`}>
-                      {item.dropdown.map((sub) => (
-                        <Link
-                          key={sub.path}
-                          href={sub.path}
-                          className={`block px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium ${
-                            isActive(sub.path)
-                              ? 'text-primary-accent bg-primary-accent/10'
-                              : 'text-slate-300 hover:text-white hover:bg-white/10'
-                          }`}
-                        >
-                          {sub.name}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      isActive(item.path)
-                        ? 'text-primary-accent bg-primary-accent/[0.08]'
-                        : 'text-slate-300 hover:text-white hover:bg-white/5'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                )
-              )}
-            </div>
-
-            {/* CTA + Login + Mobile Toggle */}
-            <div className="flex items-center gap-2 sm:gap-3">
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-8">
+            {navLinks.map((link) => (
               <Link
-                href="/auth/login"
-                className="hidden sm:inline-flex items-center text-white border border-white/30 hover:bg-white/10 hover:border-white/50 transition-all duration-300 px-5 py-2 rounded-lg text-sm font-medium"
+                key={link.href}
+                href={link.href}
+                className="text-sm font-medium transition-colors text-foreground hover:text-primary"
               >
-                Login
+                {link.label}
               </Link>
-              <Link
-                href="/auth/register"
-                className="hidden sm:inline-flex items-center gap-2 px-5 py-2 text-white font-semibold text-sm rounded-lg transition-all duration-300 hover:-translate-y-0.5"
-                style={{
-                  background: 'linear-gradient(135deg, #7B2FFF, #1A56FF)',
-                  boxShadow: '0 0 16px rgba(123,47,255,0.35)',
-                }}
-                onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 28px rgba(123,47,255,0.6), 0 0 50px rgba(26,86,255,0.2)'}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = '0 0 16px rgba(123,47,255,0.35)'}
-              >
-                <User size={13} />
-                Open Account
-              </Link>
+            ))}
+          </nav>
 
-              {/* Mobile toggle */}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setIsOpen((prev) => !prev) }}
-                className="lg:hidden relative z-[60] w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-200 active:scale-95"
-                aria-label="Toggle menu"
-              >
-                {isOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
-            </div>
+          {/* Desktop CTA Buttons */}
+          <div className="hidden lg:flex items-center gap-3">
+            <LoginDialog
+              trigger={
+                <Button variant="ghost" className="text-sm font-medium text-foreground hover:text-primary">
+                  Log In
+                </Button>
+              }
+            />
+            <OpenAccountDialog
+              trigger={
+                <Button className="bg-primary hover:bg-primary/90 text-white px-6 rounded-full shadow-md shadow-emerald-500/30">
+                  Get Started Free
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              }
+            />
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-foreground" />
+            ) : (
+              <Menu className="w-6 h-6 text-foreground" />
+            )}
+          </button>
         </div>
 
         {/* Mobile Menu */}
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: 'easeInOut' }}
-              className="lg:hidden overflow-hidden border-t border-white/5"
-              style={{ background: 'rgba(10,14,26,0.97)', backdropFilter: 'blur(20px)' }}
-            >
-              <div className="container-custom py-4 space-y-1 max-h-[calc(100dvh-72px)] overflow-y-auto">
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.04, duration: 0.3 }}
-                  >
-                    {item.dropdown ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setMobileDropdown(mobileDropdown === item.label ? null : item.label)}
-                          className="flex items-center justify-between w-full px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-all"
-                        >
-                          <span className="flex items-center gap-3">
-                            <span className="text-primary-accent">{item.icon}</span>
-                            <span className="text-sm font-medium">{item.label}</span>
-                          </span>
-                          <ChevronDown size={14} className={`transition-transform duration-200 text-slate-500 ${mobileDropdown === item.label ? 'rotate-180' : ''}`} />
-                        </button>
-                        <AnimatePresence>
-                          {mobileDropdown === item.label && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden"
-                            >
-                              {item.dropdown.map((sub) => (
-                                <Link
-                                  key={sub.path}
-                                  href={sub.path}
-                                  className={`flex items-center gap-3 pl-12 pr-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                    isActive(sub.path)
-                                      ? 'text-primary-accent bg-primary-accent/10 border border-primary-accent/20'
-                                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                                  }`}
-                                >
-                                  {sub.name}
-                                </Link>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </>
-                    ) : (
-                      <Link
-                        href={item.path}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          isActive(item.path)
-                            ? 'text-primary-accent bg-primary-accent/10 border border-primary-accent/20'
-                            : 'text-slate-300 hover:text-white hover:bg-white/5'
-                        }`}
-                      >
-                        <span className="text-primary-accent">{item.icon}</span>
-                        {item.label}
-                      </Link>
-                    )}
-                  </motion.div>
-                ))}
-
-                {/* Mobile CTA */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35, duration: 0.3 }}
-                  className="pt-3 border-t border-white/5 space-y-2"
-                >
-                  <Link
-                    href="/auth/login"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white font-medium text-sm rounded-lg border border-white/20 hover:bg-white/5 transition-all"
-                  >
-                    Login
-                  </Link>
-                  <Link
-                    href="/auth/register"
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 text-white font-semibold text-sm rounded-lg transition-all duration-200"
-                    style={{ background: 'linear-gradient(135deg, #7B2FFF, #1A56FF)', boxShadow: '0 0 16px rgba(123,47,255,0.3)' }}
-                  >
-                    <User size={14} />
-                    Open Live Account
-                  </Link>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
-
-      {/* Login Modal */}
-      {isLoginOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in"
-          onClick={() => setIsLoginOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-md glass-card p-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setIsLoginOpen(false)}
-              className="absolute top-4 right-4 text-text-secondary hover:text-white transition-colors"
-              aria-label="Close"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white">Welcome back</h2>
-                <p className="text-text-secondary text-sm">Login to your TrustEdgeFX account</p>
-              </div>
-            </div>
-
-            <form
-              className="space-y-4"
-              onSubmit={(e) => { e.preventDefault(); setIsLoginOpen(false) }}
-            >
-              <div>
-                <label className="block text-sm text-text-secondary mb-2">Email</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-full pl-11 pr-4 py-3 text-white placeholder:text-text-secondary focus:outline-none focus:border-primary-accent transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm text-text-secondary mb-2">Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    className="w-full bg-white/5 border border-white/10 rounded-full pl-11 pr-4 py-3 text-white placeholder:text-text-secondary focus:outline-none focus:border-primary-accent transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-text-secondary cursor-pointer">
-                  <input type="checkbox" className="accent-primary-accent" />
-                  Remember me
-                </label>
-                <a href="#" className="text-primary-accent hover:text-white transition-colors">
-                  Forgot password?
-                </a>
-              </div>
-
-              <button type="submit" className="btn-primary w-full">
-                Login
-              </button>
-
-              <p className="text-center text-sm text-text-secondary">
-                Don&apos;t have an account?{' '}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden py-4 border-t border-border bg-white">
+            <nav className="flex flex-col gap-2">
+              {navLinks.map((link) => (
                 <Link
-                  href="/accounts/demo"
-                  onClick={() => setIsLoginOpen(false)}
-                  className="text-primary-accent hover:text-white transition-colors font-semibold"
+                  key={link.href}
+                  href={link.href}
+                  className="block text-sm font-medium py-2 pl-3 hover:text-primary transition-colors text-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Open Account
+                  {link.label}
                 </Link>
-              </p>
-            </form>
+              ))}
+              <div className="flex flex-col gap-3 pt-4">
+                <LoginDialog
+                  trigger={
+                    <Button variant="outline" className="w-full">Log In</Button>
+                  }
+                />
+                <OpenAccountDialog
+                  trigger={
+                    <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+                      Get Started Free
+                    </Button>
+                  }
+                />
+              </div>
+            </nav>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </header>
   )
 }
-
-export default Navbar

@@ -1,5 +1,41 @@
-# TrustEdge Production Deployment Guide
-## trustedgefx.com — Hostinger VPS + Cloudflare + GoDaddy
+# EXX9 Production Deployment Guide
+## exx9.com — Hostinger VPS + Cloudflare + GoDaddy
+
+> ## ⚠️ Pre-Flight Production Checklist
+>
+> This is a real-money trading platform. Do **not** skip these.
+>
+> **Code & secrets**
+> - [ ] Run `./scripts/preflight-prod.sh` — must exit clean (zero failures)
+> - [ ] Rotate `JWT_SECRET`, `USER_JWT_SECRET`, `ADMIN_JWT_SECRET` (`openssl rand -hex 32`)
+> - [ ] Rotate `POSTGRES_PASSWORD`, `TIMESCALE_PASSWORD`
+> - [ ] Set strong `ADMIN_PASSWORD`; change again from the UI right after first login
+> - [ ] `ENVIRONMENT=production` (disables `/docs`, `/redoc`)
+> - [ ] `COOKIE_SECURE=true` (or omit so it auto-detects HTTPS)
+> - [ ] `CORS_ORIGINS` contains **only** real prod domains (no `http://localhost`)
+>
+> **Data & migrations**
+> - [ ] `$COMPOSE --profile migrate run --rm migrate` ran successfully (creates admin)
+> - [ ] `./scripts/backup-db.sh /root/backups` runs end-to-end (test it now, not when you need it)
+> - [ ] Cron entry for the backup script is scheduled
+>
+> **Tests & CI**
+> - [ ] CI green on `main` (`.github/workflows/ci.yml`) — backend tests + frontend builds pass
+> - [ ] Manual smoke: register a user, log in, place a paper trade, log out, refresh, log back in
+>
+> **Monitoring & ops**
+> - [ ] `SENTRY_DSN` set so prod errors are captured
+> - [ ] Cloudflare WAF + rate-limit rules reviewed
+> - [ ] Origin SSL cert + private key in place (`/etc/ssl/cloudflare/`), `chmod 600` on key
+> - [ ] Market data key (`ALLTICK_API_KEY`) is a real AllTick key, not the placeholder
+>       (without it the platform runs on simulated prices — fine for staging, never for production)
+>
+> **Legal / compliance**
+> - [ ] KYC document storage retention policy documented
+> - [ ] Privacy policy + ToS reviewed by legal for the operating jurisdiction
+> - [ ] Trading licence / regulatory disclosure on the site matches reality
+>
+> Skip any of these and you're shipping a beta to real users with real money.
 
 ### Architecture
 ```
@@ -7,7 +43,7 @@ Browser → Cloudflare CDN (SSL) → Nginx (Origin SSL) → Docker Containers
                                     │
                 ┌───────────────────┼────────────────────┐
                 │                   │                    │
-        trustedgefx.com    admin.trustedgefx.com   api.trustedgefx.com
+        exx9.com    admin.exx9.com   api.exx9.com
           :3010 (trader)     :3011 (admin)           :8000 (gateway+ws)
 ```
 
@@ -27,7 +63,7 @@ You already have Cloudflare nameservers on GoDaddy. Now add DNS records in **Clo
 ### Cloudflare SSL Settings:
 1. Go to **SSL/TLS → Overview** → Set mode to **Full (strict)**
 2. Go to **SSL/TLS → Origin Server** → Click **Create Certificate**
-   - Leave defaults (RSA 2048, *.trustedgefx.com + trustedgefx.com)
+   - Leave defaults (RSA 2048, *.exx9.com + exx9.com)
    - Validity: **15 years**
    - Click **Create**
    - **COPY the Origin Certificate** (PEM) → save as `origin.pem`
@@ -187,22 +223,27 @@ chown root:root /etc/ssl/cloudflare/*
 
 ### Step 4.1 — Clone the repository
 
+Replace `<git-host>` and `<repo>` with your actual git host and repo path
+(e.g. `github.com/your-org/exx9`).
+
 ```bash
 cd /root
-git clone https://github.com/YOUR_USERNAME/trustedge.git
-cd trustedge
+git clone https://<git-host>/<repo>.git exx9
+cd exx9
 ```
 
-> If private repo, set up SSH key or use a personal access token:
+> Private repo? Set up an SSH deploy key, or use a personal access token:
 > ```bash
-> git clone https://YOUR_TOKEN@github.com/YOUR_USERNAME/trustedge.git
+> git clone https://<TOKEN>@<git-host>/<repo>.git exx9
 > ```
 
 ### Step 4.2 — Create production .env
 
+The repo ships an `.env.example` at the project root with all required keys
+and inline comments. Copy it to `.env`, then edit:
+
 ```bash
-# Copy the template
-cp deploy/.env.production .env
+cp .env.example .env
 ```
 
 Now edit `.env` and **change ALL passwords and secrets**:
@@ -238,8 +279,8 @@ openssl rand -base64 24
 - [ ] `ADMIN_JWT_SECRET` — different random 64-char hex
 - [ ] `COOKIE_SECURE=true` — already set
 - [ ] `CORS_ORIGINS` — has both domains
-- [ ] `TRADER_APP_URL` — https://trustedgefx.com
-- [ ] `INFOWAY_API_KEY` — your real key (or leave placeholder for simulated feed)
+- [ ] `TRADER_APP_URL` — https://exx9.com
+- [ ] `ALLTICK_API_KEY` — real AllTick key (or leave placeholder for simulated feed in staging)
 
 ---
 
@@ -251,11 +292,11 @@ openssl rand -base64 24
 rm -f /etc/nginx/sites-enabled/default
 ```
 
-### Step 5.2 — Copy the TrustEdge nginx config
+### Step 5.2 — Copy the EXX9 nginx config
 
 ```bash
-cp /root/trustedge/deploy/nginx/trustedgefx.conf /etc/nginx/sites-available/trustedgefx.conf
-ln -sf /etc/nginx/sites-available/trustedgefx.conf /etc/nginx/sites-enabled/trustedgefx.conf
+cp /root/exx9/deploy/nginx/exx9.conf /etc/nginx/sites-available/exx9.conf
+ln -sf /etc/nginx/sites-available/exx9.conf /etc/nginx/sites-enabled/exx9.conf
 ```
 
 ### Step 5.3 — Optimize Nginx main config
@@ -314,7 +355,7 @@ systemctl restart nginx
 ### Step 6.1 — Build all images
 
 ```bash
-cd /root/trustedge
+cd /root/exx9
 
 # Build with production compose file
 # APP_VERSION tags the build so browsers get fresh JS
@@ -346,18 +387,18 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
 
 You should see all services as `running` or `healthy`:
 ```
-trustedge-postgres-1          running (healthy)
-trustedge-timescaledb-1       running (healthy)
-trustedge-redis-1             running (healthy)
-trustedge-zookeeper-1         running
-trustedge-kafka-1             running (healthy)
-trustedge-gateway-1           running
-trustedge-admin-api-1         running
-trustedge-market-data-1       running
-trustedge-b-book-engine-1     running
-trustedge-risk-engine-1       running
-trustedge-trader-frontend-1   running
-trustedge-admin-frontend-1    running
+exx9-postgres-1          running (healthy)
+exx9-timescaledb-1       running (healthy)
+exx9-redis-1             running (healthy)
+exx9-zookeeper-1         running
+exx9-kafka-1             running (healthy)
+exx9-gateway-1           running
+exx9-admin-api-1         running
+exx9-market-data-1       running
+exx9-b-book-engine-1     running
+exx9-risk-engine-1       running
+exx9-trader-frontend-1   running
+exx9-admin-frontend-1    running
 ```
 
 ### Step 6.4 — Run database migrations
@@ -376,7 +417,7 @@ curl http://localhost:8000/health
 curl http://localhost:8001/health
 
 # Through Nginx (should work if Cloudflare DNS has propagated)
-curl -k https://api.trustedgefx.com/health
+curl -k https://api.exx9.com/health
 ```
 
 ### Step 6.6 — Check logs if anything is wrong
@@ -399,20 +440,21 @@ Test each URL in your browser:
 
 | URL | Expected |
 |-----|----------|
-| https://trustedgefx.com | Trader landing page |
-| https://trustedgefx.com/auth/login | Login page |
-| https://admin.trustedgefx.com | Admin login page |
-| https://admin.trustedgefx.com/login | Admin login form |
-| https://api.trustedgefx.com/health | `{"status":"ok","service":"gateway"}` |
+| https://exx9.com | Trader landing page |
+| https://exx9.com/auth/login | Login page |
+| https://admin.exx9.com | Admin login page |
+| https://admin.exx9.com/login | Admin login form |
+| https://api.exx9.com/health | `{"status":"ok","service":"gateway"}` |
 
 **Test admin login:**
-- Go to https://admin.trustedgefx.com
-- Login: `admin@protrader.com` / `ProTraderAdmin2025!`
+- Go to https://admin.exx9.com
+- Login with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set in `.env`
+  (defaults in `.env.example` are `admin@exx9.com` / `EXX9Admin2025!`).
 - **Change the password immediately after first login!**
 
 **Test WebSocket (browser console):**
 ```javascript
-const ws = new WebSocket('wss://api.trustedgefx.com/ws/prices');
+const ws = new WebSocket('wss://api.exx9.com/ws/prices');
 ws.onmessage = (e) => console.log(JSON.parse(e.data));
 ws.onopen = () => console.log('connected');
 ```
@@ -450,7 +492,7 @@ EOF
 mkdir -p /root/backups
 
 # Make backup script executable
-chmod +x /root/trustedge/scripts/backup-db.sh
+chmod +x /root/exx9/scripts/backup-db.sh
 
 # Add cron job
 crontab -e
@@ -458,7 +500,7 @@ crontab -e
 
 Add this line:
 ```
-0 2 * * * cd /root/trustedge && ./scripts/backup-db.sh /root/backups >> /var/log/trustedge-backup.log 2>&1
+0 2 * * * cd /root/exx9 && ./scripts/backup-db.sh /root/backups >> /var/log/exx9-backup.log 2>&1
 ```
 
 ### 8.5 — Monitor disk space
@@ -482,7 +524,7 @@ Add:
 
 ```bash
 # ── Navigate to project ──────────────────────────────────────
-cd /root/trustedge
+cd /root/exx9
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
 
 # ── View status ──────────────────────────────────────────────
@@ -511,8 +553,8 @@ $COMPOSE logs -f gateway
 $COMPOSE logs -f trader-frontend admin-frontend
 
 # ── Enter a running container ────────────────────────────────
-docker exec -it trustedge-gateway-1 bash
-docker exec -it trustedge-postgres-1 psql -U protrader -d protrader
+docker exec -it exx9-gateway-1 bash
+docker exec -it exx9-postgres-1 psql -U protrader -d protrader
 
 # ── Stop everything ──────────────────────────────────────────
 $COMPOSE down
