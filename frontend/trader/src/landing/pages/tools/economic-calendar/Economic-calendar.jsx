@@ -3,6 +3,7 @@
 import { Navbar } from "@/landing/components/navbar"
 import { Footer } from "@/landing/components/footer"
 import { EconomicCalendarSection } from "@/landing/components/economic-calendar-section"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 export default function EconomicCalendarPage() {
   return (
@@ -17,7 +18,9 @@ export default function EconomicCalendarPage() {
             </p>
           </div>
         </section>
+        <WaveSeparator variant="tide" color="brand" height={110} />
         <EconomicCalendarSection />
+        <WaveSeparator variant="dual" color="mint" height={90} direction="up" />
         <section className="py-8 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-white/60 text-xs text-center">

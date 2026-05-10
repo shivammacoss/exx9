@@ -5,6 +5,7 @@ import { Footer } from "@/landing/components/footer"
 import { Button } from "@/landing/components/ui/button"
 import { ArrowRight, Monitor, Smartphone, Download, CheckCircle2, Zap, Shield, BarChart3 } from "lucide-react"
 import { OpenAccountDialog } from "@/landing/components/auth-dialogs"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 export default function TradingPlatformPage() {
   return (
@@ -33,6 +34,8 @@ export default function TradingPlatformPage() {
           </div>
         </section>
 
+        <WaveSeparator variant="tide" color="brand" height={110} direction="down" />
+
         <section className="py-20 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -56,6 +59,8 @@ export default function TradingPlatformPage() {
             </div>
           </div>
         </section>
+
+        <WaveSeparator variant="dual" color="mint" height={90} direction="down" />
 
         <section className="py-20 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -84,6 +89,8 @@ export default function TradingPlatformPage() {
             </div>
           </div>
         </section>
+
+        <WaveSeparator variant="curve" color="brand" height={100} direction="up" />
 
         <section className="py-8 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

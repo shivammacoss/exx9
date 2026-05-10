@@ -130,3 +130,155 @@
 .exx9-landing .bg-light-mint { background-color: #f0fdf4; }
 .exx9-landing .bg-deep-black { background-color: #0a0a0a; }
 .exx9-landing .border-mint { border-color: #bbf7d0; }
+
+
+/* ───────────────────────────────────────────────────────────────
+   MODERN VISUAL POLISH
+   ─────────────────────────────────────────────────────────────── */
+
+/* Subtle radial glow backdrop on the whole page */
+.exx9-landing-page {
+  position: relative;
+  background:
+    radial-gradient(ellipse 1200px 600px at 10% -10%, rgba(16, 185, 129, 0.08), transparent 60%),
+    radial-gradient(ellipse 1000px 500px at 90% 110%, rgba(132, 204, 22, 0.07), transparent 60%),
+    #ffffff;
+  overflow-x: hidden;
+}
+
+/* Wave separator container — make sure it tucks neatly between sections */
+.exx9-landing .wave-separator,
+.wave-separator {
+  position: relative;
+  z-index: 1;
+  margin-top: -1px;
+  margin-bottom: -1px;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 14px rgba(16, 185, 129, 0.12));
+}
+
+.wave-separator--tide svg path {
+  will-change: d;
+}
+
+/* Animated brand gradient — shifts slowly for living feel */
+@keyframes exx9-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.exx9-landing .brand-gradient-animated {
+  background: linear-gradient(120deg, #047857 0%, #10b981 35%, #84cc16 70%, #10b981 100%);
+  background-size: 300% 300%;
+  animation: exx9-gradient-shift 12s ease-in-out infinite;
+}
+
+/* Glassmorphism card — for floating CTAs and stat cards */
+.exx9-landing .glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 10px 40px -10px rgba(16, 185, 129, 0.15),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+/* Hover-lift effect for any card */
+.exx9-landing .lift-on-hover {
+  transition: transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 350ms ease,
+              border-color 250ms ease;
+}
+.exx9-landing .lift-on-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 56px -16px rgba(16, 185, 129, 0.25);
+}
+
+/* Soft glow ring (pulsing) for primary CTAs */
+@keyframes exx9-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55), 0 0 30px 0 rgba(16, 185, 129, 0.25); }
+  50%      { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0),  0 0 50px 8px rgba(16, 185, 129, 0.18); }
+}
+.exx9-landing .pulse-glow {
+  animation: exx9-pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Sections sit above the fixed-position decorative orbs */
+.exx9-landing-page > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Decorative grid pattern overlay (very subtle) */
+.exx9-landing .grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right,  rgba(16,185,129,0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(16,185,129,0.06) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 800px 400px at 50% 50%, black 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 800px 400px at 50% 50%, black 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Headline emphasis — gradient + soft drop-shadow for any h1/h2 with class */
+.exx9-landing .display-h2,
+.exx9-landing .headline-glow {
+  background: linear-gradient(120deg, #047857 0%, #10b981 50%, #65a30d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 30px rgba(16, 185, 129, 0.18);
+  letter-spacing: -0.02em;
+}
+
+/* Decorative floating orbs — purely visual, sit behind content */
+.exx9-landing-page::before,
+.exx9-landing-page::after {
+  content: '';
+  position: fixed;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+  z-index: 0;
+  pointer-events: none;
+}
+.exx9-landing-page::before {
+  width: 380px;
+  height: 380px;
+  top: 10%;
+  left: -120px;
+  background: radial-gradient(circle, #10b981, transparent 70%);
+  animation: exx9-float 18s ease-in-out infinite;
+}
+.exx9-landing-page::after {
+  width: 460px;
+  height: 460px;
+  bottom: 5%;
+  right: -160px;
+  background: radial-gradient(circle, #84cc16, transparent 70%);
+  animation: exx9-float 22s ease-in-out infinite reverse;
+}
+@keyframes exx9-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.05); }
+  66%      { transform: translate(-30px, 20px) scale(0.96); }
+}
+
+/* Smooth scroll for anchor jumps on the landing */
+html:has(.exx9-landing-page) { scroll-behavior: smooth; }
+
+/* Reduce motion — respect user preference */
+@media (prefers-reduced-motion: reduce) {
+  .exx9-landing-page::before,
+  .exx9-landing-page::after,
+  .exx9-landing .brand-gradient-animated,
+  .exx9-landing .pulse-glow {
+    animation: none !important;
+  }
+  .wave-separator--tide svg path animate { display: none; }
+}

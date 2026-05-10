@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Navbar } from "@/landing/components/navbar"
 import { Footer } from "@/landing/components/footer"
 import { ArrowRight } from "lucide-react"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 const blogPosts = [
   { title: "Understanding Forex Market Hours", category: "Education", date: "Mar 5, 2026", image: "/images/blog-1.jpg", slug: "forex-market-hours" },
@@ -30,6 +31,8 @@ export default function BlogPage() {
           </div>
         </section>
 
+        <WaveSeparator variant="tide" color="brand" height={110} direction="down" />
+
         <section className="py-12 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -55,6 +58,8 @@ export default function BlogPage() {
             </div>
           </div>
         </section>
+
+        <WaveSeparator variant="dual" color="mint" height={90} direction="down" />
 
         <section className="py-8 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

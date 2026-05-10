@@ -6,6 +6,7 @@ import { Footer } from "@/landing/components/footer"
 import { Button } from "@/landing/components/ui/button"
 import { Input } from "@/landing/components/ui/input"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" })
@@ -30,6 +31,8 @@ export default function ContactPage() {
             </p>
           </div>
         </section>
+
+        <WaveSeparator variant="tide" color="brand" height={110} direction="down" />
 
         <section className="py-12 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -110,6 +113,8 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
+
+        <WaveSeparator variant="dual" color="mint" height={90} direction="down" />
 
         <section className="py-8 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

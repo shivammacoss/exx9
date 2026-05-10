@@ -20,6 +20,7 @@ import {
   Award
 } from "lucide-react"
 import { OpenAccountDialog } from "@/landing/components/auth-dialogs"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 export default function PropFirmPage() {
   return (
@@ -75,6 +76,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Overview Section */}
+        <WaveSeparator variant="tide" color="brand" height={110} direction="down" />
         <section className="py-20 lg:py-28 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -103,6 +105,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* What We Stand For */}
+        <WaveSeparator variant="dual" color="mint" height={90} direction="down" />
         <section className="py-20 lg:py-28 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -137,6 +140,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Empowering Traders */}
+        <WaveSeparator variant="curve" color="brand" height={100} direction="up" />
         <section className="relative py-20 lg:py-28 overflow-hidden">
           <img src="/images/bg-stats-fintech.jpg"
             alt=""
@@ -179,6 +183,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* One Platform Section */}
+        <WaveSeparator variant="sharp" color="mint" height={80} direction="down" />
         <section className="py-20 lg:py-28 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -211,6 +216,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* All-in-One Solution */}
+        <WaveSeparator variant="split" color="brand" height={130} direction="down" />
         <section className="py-20 lg:py-28 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -252,6 +258,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Complete Infrastructure */}
+        <WaveSeparator variant="curve" color="mint" height={90} direction="up" />
         <section className="py-20 lg:py-28 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -285,6 +292,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Charting Solutions */}
+        <WaveSeparator variant="dual" color="brand" height={100} direction="down" />
         <section className="py-20 lg:py-28 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -333,6 +341,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Management Solution */}
+        <WaveSeparator variant="tide" color="mint" height={100} direction="down" />
         <section className="py-20 lg:py-28 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -394,6 +403,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* CTA Section */}
+        <WaveSeparator variant="sharp" color="brand" height={80} direction="up" />
         <section className="relative py-20 lg:py-28 overflow-hidden">
           <img src="/images/bg-hero-fintech.jpg"
             alt=""
@@ -419,6 +429,7 @@ export default function PropFirmPage() {
         </section>
 
         {/* Risk Disclaimer */}
+        <WaveSeparator variant="curve" color="brand" height={90} direction="down" />
         <section className="py-8 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <p className="text-white/60 text-xs text-center leading-relaxed">

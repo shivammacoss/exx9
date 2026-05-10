@@ -3,8 +3,8 @@
 import { Button } from "@/landing/components/ui/button"
 import { Navbar } from "@/landing/components/navbar"
 import { Footer } from "@/landing/components/footer"
-import { 
-  Download, 
+import {
+  Download,
   ArrowRight, 
   Star, 
   Quote,
@@ -18,6 +18,7 @@ import {
   Smartphone,
   Monitor
 } from "lucide-react"
+import { WaveSeparator } from "@/landing/components/wave-separator"
 
 export default function AboutPage() {
   return (
@@ -48,7 +49,8 @@ export default function AboutPage() {
       </section>
 
       {/* Company History Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="tide" color="brand" height={110} direction="down" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/about-history.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -107,7 +109,8 @@ export default function AboutPage() {
       </section>
 
       {/* Client Reviews Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="dual" color="mint" height={90} direction="down" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/bg-stats-fintech.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -162,7 +165,8 @@ export default function AboutPage() {
       </section>
 
       {/* Vision & Mission Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="curve" color="brand" height={100} direction="up" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/about-vision.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -198,7 +202,8 @@ export default function AboutPage() {
       </section>
 
       {/* Core Values Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="sharp" color="mint" height={80} direction="down" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/bg-benefits-fintech.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -241,7 +246,8 @@ export default function AboutPage() {
       </section>
 
       {/* Platform & Technology Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="split" color="brand" height={130} direction="down" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/bg-chart-fintech.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -287,7 +293,8 @@ export default function AboutPage() {
       </section>
 
       {/* Awards Section */}
-      <section id="awards" className="py-20 lg:py-28 bg-background">
+      <WaveSeparator variant="curve" color="mint" height={90} direction="up" />
+        <section id="awards" className="py-20 lg:py-28 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Recognition</p>
@@ -319,7 +326,8 @@ export default function AboutPage() {
       </section>
 
       {/* Regulation Section */}
-      <section id="regulation" className="py-20 lg:py-28 bg-muted/30">
+      <WaveSeparator variant="dual" color="brand" height={100} direction="down" />
+        <section id="regulation" className="py-20 lg:py-28 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-primary font-semibold text-sm uppercase tracking-wider mb-3">Compliance</p>
@@ -381,7 +389,8 @@ export default function AboutPage() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="relative py-20 lg:py-28 overflow-hidden">
+      <WaveSeparator variant="tide" color="mint" height={100} direction="down" />
+        <section className="relative py-20 lg:py-28 overflow-hidden">
         <img src="/images/bg-hero-fintech.jpg"
           alt=""
           className="absolute inset-0 w-full h-full object-cover" />
@@ -408,7 +417,8 @@ export default function AboutPage() {
       </section>
 
       {/* Risk Warning */}
-      <section className="bg-foreground py-8">
+      <WaveSeparator variant="sharp" color="brand" height={80} direction="up" />
+        <section className="bg-foreground py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-white/60 text-sm leading-relaxed">
             <span className="text-white/80 font-semibold">Risk Warning:</span> CFDs are complex instruments and carry a high risk due to leverage. Ensure you understand the risks before trading. <span className="text-white/80 font-medium">Your capital is at risk.</span>
