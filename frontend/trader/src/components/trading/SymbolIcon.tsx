@@ -82,7 +82,7 @@ const METAL_COMMODITY: Record<string, { letter: string; gradient: string; textCo
   UKOIL: { letter: 'Oil', gradient: 'from-zinc-800 to-black', textColor: 'text-white' },
   WTI: { letter: 'WTI', gradient: 'from-zinc-800 to-black', textColor: 'text-white' },
   BRENT: { letter: 'Br', gradient: 'from-zinc-800 to-black', textColor: 'text-white' },
-  NATGAS: { letter: 'NG', gradient: 'from-sky-500 to-blue-700', textColor: 'text-white' },
+  NATGAS: { letter: 'NG', gradient: 'from-emerald-500 to-emerald-700', textColor: 'text-white' },
   COPPER: { letter: 'Cu', gradient: 'from-orange-500 to-amber-700', textColor: 'text-white' },
 };
 
@@ -90,11 +90,11 @@ const METAL_COMMODITY: Record<string, { letter: string; gradient: string; textCo
 function fallbackGradient(symbol: string): string {
   const gradients = [
     'from-slate-500 to-slate-700',
-    'from-indigo-500 to-purple-700',
+    'from-emerald-500 to-purple-700',
     'from-emerald-500 to-teal-700',
     'from-rose-500 to-pink-700',
     'from-orange-500 to-red-700',
-    'from-sky-500 to-blue-700',
+    'from-emerald-500 to-emerald-700',
     'from-violet-500 to-fuchsia-700',
     'from-lime-500 to-emerald-700',
   ];

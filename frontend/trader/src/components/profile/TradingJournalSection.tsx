@@ -4,7 +4,7 @@ import { BookOpen, BarChart3, DollarSign, Info, PieChart, TrendingUp, Wallet } f
 import { clsx } from 'clsx';
 import type { TradingJournalBlock } from '@/lib/trading-dashboard';
 
-const NEON = '#2196f3';
+const NEON = '#10b981';
 const CARD = 'var(--bg-card)';
 const BORDER = 'var(--border-primary)';
 
@@ -77,8 +77,8 @@ export default function TradingJournalSection({
   return (
     <section className="text-text-primary">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-[#2196f3]/12 border border-[#2196f3]/25 flex items-center justify-center">
-          <BookOpen className="w-5 h-5 text-[#2196f3]" />
+        <div className="w-10 h-10 rounded-xl bg-[#10b981]/12 border border-[#10b981]/25 flex items-center justify-center">
+          <BookOpen className="w-5 h-5 text-[#10b981]" />
         </div>
         <h2 className="text-lg md:text-xl font-bold tracking-tight">{title}</h2>
       </div>
@@ -88,13 +88,13 @@ export default function TradingJournalSection({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2196f3]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
                 Balance
               </p>
               <p className="text-2xl md:text-3xl font-bold mt-1 tabular-nums">{fmtUsd(j.balance)}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-bg-secondary border border-border-primary flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-[#2196f3]" />
+              <Wallet className="w-5 h-5 text-[#10b981]" />
             </div>
           </div>
         </div>
@@ -102,13 +102,13 @@ export default function TradingJournalSection({
           <div className="flex items-start justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2196f3]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
                 Equity
               </p>
               <p className="text-2xl md:text-3xl font-bold mt-1 tabular-nums">{fmtUsd(j.equity)}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-bg-secondary border border-border-primary flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-[#2196f3]" />
+              <DollarSign className="w-5 h-5 text-[#10b981]" />
             </div>
           </div>
         </div>
@@ -120,14 +120,14 @@ export default function TradingJournalSection({
             label: 'Net P&L',
             icon: DollarSign,
             value: fmtCompactSigned(j.netPl),
-            valueClass: j.netPl >= 0 ? 'text-[#2196f3]' : 'text-red-400',
+            valueClass: j.netPl >= 0 ? 'text-[#10b981]' : 'text-red-400',
             sub: `${j.netPlTradeCount} trades`,
           },
           {
             label: 'Profit factor',
             icon: TrendingUp,
             value: String(j.profitFactor),
-            valueClass: 'text-[#2196f3]',
+            valueClass: 'text-[#10b981]',
             sub: j.profitFactorNote,
           },
           {
@@ -174,7 +174,7 @@ export default function TradingJournalSection({
         </div>
         <div className="rounded-xl p-4 border" style={{ backgroundColor: CARD, borderColor: BORDER }}>
           <div className="flex items-center gap-2 text-sm font-semibold text-text-primary mb-3">
-            <PieChart className="w-4 h-4 text-[#2196f3]" />
+            <PieChart className="w-4 h-4 text-[#10b981]" />
             Account stats
           </div>
           <ul className="space-y-2.5 text-sm">

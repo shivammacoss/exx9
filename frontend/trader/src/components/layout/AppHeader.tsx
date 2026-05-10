@@ -82,7 +82,7 @@ export default function AppHeader() {
           aria-label="Toggle menu"
         >
           <img
-            src="/images/exx9 logo.png"
+            src="/images/exx9_logo_dark.png"
             alt="exx9"
             className="w-10 h-10 object-contain"
           />
@@ -93,11 +93,11 @@ export default function AppHeader() {
           {/* Balance pill */}
           <Link
             href="/wallet"
-            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-[#2196f3]/30 bg-[#2196f3]/5 hover:bg-[#2196f3]/10 transition-colors"
+            className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-[#10b981]/30 bg-[#10b981]/5 hover:bg-[#10b981]/10 transition-colors"
           >
-            <Wallet size={14} className="text-[#2196f3] shrink-0" />
-            <span className="text-[#2196f3] text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-none">{formatUsd(balance)}</span>
-            <ChevronDown size={12} className="text-[#2196f3]/60 shrink-0 hidden sm:block" />
+            <Wallet size={14} className="text-[#10b981] shrink-0" />
+            <span className="text-[#10b981] text-xs sm:text-sm font-medium truncate max-w-[90px] sm:max-w-none">{formatUsd(balance)}</span>
+            <ChevronDown size={12} className="text-[#10b981]/60 shrink-0 hidden sm:block" />
           </Link>
 
           {/* Notification bell */}
@@ -110,7 +110,7 @@ export default function AppHeader() {
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#2196f3]/20 border border-[#2196f3]/30 flex items-center justify-center text-[#2196f3] text-[10px] sm:text-xs font-bold uppercase">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#10b981]/20 border border-[#10b981]/30 flex items-center justify-center text-[#10b981] text-[10px] sm:text-xs font-bold uppercase">
                 {initials}
               </div>
               <span className="text-sm text-text-primary hidden sm:inline">{handle}</span>

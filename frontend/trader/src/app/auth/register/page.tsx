@@ -128,7 +128,7 @@ function RegisterContent() {
 
   /* password strength */
   const strength = form.password.length >= 12 ? 4 : form.password.length >= 10 ? 3 : form.password.length >= 8 ? 2 : form.password.length > 0 ? 1 : 0;
-  const strengthColors = ['#ef4444', '#f59e0b', '#22c55e', '#2196f3'];
+  const strengthColors = ['#ef4444', '#f59e0b', '#22c55e', '#10b981'];
 
   /* ── Step change ── */
   const handleStepClick = (step: number) => {
@@ -154,25 +154,64 @@ function RegisterContent() {
               animate={{ scale: [1, 1.25, 1], y: [0, -30, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             />
+            <div className="auth-chart-bars" aria-hidden>
+              <span /><span /><span /><span /><span /><span />
+            </div>
             <div className="auth-left__content">
-              <motion.h1 className="auth-left__title" {...fadeUp(0.3)}>
-                {LEFT_CONFIG[3].title}
-              </motion.h1>
-              <motion.p className="auth-left__subtitle" {...fadeUp(0.4)}>
-                {LEFT_CONFIG[3].subtitle}
-              </motion.p>
-              <div className="auth-left__steps">
-                {STEPS.map((s, i) => (
-                  <motion.div key={s.number} {...fadeUp(0.45 + i * 0.08)}>
-                    <div
-                      className={`auth-step ${s.number === 3 ? 'auth-step--active' : 'auth-step--inactive'}`}
-                      onClick={() => handleStepClick(s.number)}
-                    >
-                      <span className="auth-step__num">{s.number}</span>
-                      <span className="auth-step__label">{s.label}</span>
-                    </div>
-                  </motion.div>
-                ))}
+              {/* Brand wordmark top */}
+              <motion.div className="auth-brand" {...fadeUp(0.2)}>
+                <div className="auth-brand__logo">
+                  <img src="/images/exx9_logo_dark.png" alt="" />
+                </div>
+                <span className="auth-brand__name">exx9</span>
+              </motion.div>
+
+              {/* Hero block */}
+              <div className="auth-hero">
+                <motion.div className="auth-hero__eyebrow" {...fadeUp(0.25)}>
+                  Live now — Real strategies
+                </motion.div>
+                <motion.h1 className="auth-hero__title" {...fadeUp(0.32)}>
+                  Copy Trading,<br />
+                  <em>Done Right.</em>
+                </motion.h1>
+                <motion.p className="auth-hero__subtitle" {...fadeUp(0.4)}>
+                  Join thousands of traders who copy real strategies with real results.
+                  No fluff, no hidden charges.
+                </motion.p>
+
+                {/* Stats grid */}
+                <motion.div className="auth-stats" {...fadeUp(0.48)}>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">10K+</div>
+                    <div className="auth-stat__label">Active traders</div>
+                  </div>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">0.0</div>
+                    <div className="auth-stat__label">Spread from</div>
+                  </div>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">FSC</div>
+                    <div className="auth-stat__label">Regulated</div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Bottom: steps */}
+              <div className="auth-left__bottom">
+                <div className="auth-left__steps">
+                  {STEPS.map((s, i) => (
+                    <motion.div key={s.number} {...fadeUp(0.55 + i * 0.07)}>
+                      <div
+                        className={`auth-step ${s.number === 3 ? 'auth-step--active' : 'auth-step--inactive'}`}
+                        onClick={() => handleStepClick(s.number)}
+                      >
+                        <span className="auth-step__num">{s.number}</span>
+                        <span className="auth-step__label">{s.label}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -190,12 +229,14 @@ function RegisterContent() {
                 style={{ width: '100%', maxWidth: 380 }}
               >
                 <form className="auth-form" onSubmit={handleSubmit} noValidate>
-                  <motion.div {...fadeUp(0.2)} className="flex justify-center mb-2">
-                    <img src="/images/exx9 logo.png" alt="exx9" className="w-16 h-16 object-contain" />
+                  <motion.div {...fadeUp(0.2)}>
+                    <div className="auth-form__logo">
+                      <img src="/images/exx9_logo_dark.png" alt="exx9" />
+                    </div>
                   </motion.div>
                   <motion.div {...fadeUp(0.3)}>
-                    <h2 className="auth-form__title">Sign Up Account</h2>
-                    <p className="auth-form__subtitle">Enter your personal data to create your account.</p>
+                    <h2 className="auth-form__title">Create your <em>account</em></h2>
+                    <p className="auth-form__subtitle">Get started in under a minute — no card required.</p>
                   </motion.div>
 
                   <motion.div className="auth-name-row" {...fadeUp(0.37)}>

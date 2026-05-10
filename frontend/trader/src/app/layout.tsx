@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 success: {
                   duration: 1500,
                   className: 'exx9-hot-toast',
-                  iconTheme: { primary: '#2196f3', secondary: 'var(--toast-bg)' },
+                  iconTheme: { primary: '#10b981', secondary: 'var(--toast-bg)' },
                 },
                 error: {
                   duration: 2500,

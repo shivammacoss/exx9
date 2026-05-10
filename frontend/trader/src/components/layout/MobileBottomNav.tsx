@@ -74,7 +74,7 @@ const IconMore = ({ active }: { active: boolean }) => (
 
 /* More-sheet items */
 const SHEET_ITEMS: { name: string; path: string; color: string; icon: LucideIcon }[] = [
-  { name: 'Deposit', path: '/wallet', color: '#2196f3', icon: ArrowDownToLine },
+  { name: 'Deposit', path: '/wallet', color: '#10b981', icon: ArrowDownToLine },
   { name: 'Wallet', path: '/wallet', color: '#3b82f6', icon: Wallet },
   { name: 'Portfolio', path: '/portfolio', color: '#8b5cf6', icon: PieChart },
   { name: 'MAMM', path: '/social', color: '#f59e0b', icon: Copy },
@@ -171,7 +171,7 @@ export default function MobileBottomNav() {
       >
         <div className="relative bg-bg-base">
           {/* Top border glow */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#2196f3]/20 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#10b981]/20 to-transparent" />
 
           <div className="flex items-end justify-around h-[62px] px-1">
             {/* Home */}

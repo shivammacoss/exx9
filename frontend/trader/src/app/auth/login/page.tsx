@@ -223,21 +223,63 @@ export default function LoginPage() {
               animate={{ scale: [1, 1.25, 1], y: [0, -30, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             />
+            <div className="auth-chart-bars" aria-hidden>
+              <span /><span /><span /><span /><span /><span />
+            </div>
             <div className="auth-left__content">
-              <motion.h1 className="auth-left__title" {...fadeUp(0.3)}>{cfg.title}</motion.h1>
-              <motion.p className="auth-left__subtitle" {...fadeUp(0.4)}>{cfg.subtitle}</motion.p>
-              <div className="auth-left__steps">
-                {STEPS.map((s, i) => (
-                  <motion.div key={s.number} {...fadeUp(0.45 + i * 0.08)}>
-                    <div
-                      className={`auth-step ${activeStep === s.number ? 'auth-step--active' : 'auth-step--inactive'}`}
-                      onClick={() => handleStepClick(s.number)}
-                    >
-                      <span className="auth-step__num">{s.number}</span>
-                      <span className="auth-step__label">{s.label}</span>
-                    </div>
-                  </motion.div>
-                ))}
+              {/* Brand wordmark */}
+              <motion.div className="auth-brand" {...fadeUp(0.2)}>
+                <div className="auth-brand__logo">
+                  <img src="/images/exx9_logo_dark.png" alt="" />
+                </div>
+                <span className="auth-brand__name">exx9</span>
+              </motion.div>
+
+              {/* Hero block */}
+              <div className="auth-hero">
+                <motion.div className="auth-hero__eyebrow" {...fadeUp(0.25)}>
+                  Live now — Real strategies
+                </motion.div>
+                <motion.h1 className="auth-hero__title" {...fadeUp(0.32)}>
+                  {cfg.title.split(' ').slice(0, -1).join(' ')}{' '}
+                  <em>{cfg.title.split(' ').slice(-1)[0]}.</em>
+                </motion.h1>
+                <motion.p className="auth-hero__subtitle" {...fadeUp(0.4)}>
+                  {cfg.subtitle}
+                </motion.p>
+
+                {/* Stats grid */}
+                <motion.div className="auth-stats" {...fadeUp(0.48)}>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">10K+</div>
+                    <div className="auth-stat__label">Active traders</div>
+                  </div>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">0.0</div>
+                    <div className="auth-stat__label">Spread from</div>
+                  </div>
+                  <div className="auth-stat">
+                    <div className="auth-stat__value">FSC</div>
+                    <div className="auth-stat__label">Regulated</div>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Bottom: steps */}
+              <div className="auth-left__bottom">
+                <div className="auth-left__steps">
+                  {STEPS.map((s, i) => (
+                    <motion.div key={s.number} {...fadeUp(0.55 + i * 0.07)}>
+                      <div
+                        className={`auth-step ${activeStep === s.number ? 'auth-step--active' : 'auth-step--inactive'}`}
+                        onClick={() => handleStepClick(s.number)}
+                      >
+                        <span className="auth-step__num">{s.number}</span>
+                        <span className="auth-step__label">{s.label}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -257,12 +299,14 @@ export default function LoginPage() {
                 {/* ── SIGN IN ── */}
                 {activeStep === 1 && (
                   <form className="auth-form" onSubmit={handleSignIn} noValidate>
-                    <motion.div {...fadeUp(0.2)} className="flex justify-center mb-2">
-                      <img src="/images/exx9 logo.png" alt="exx9" className="w-16 h-16 object-contain" />
+                    <motion.div {...fadeUp(0.2)}>
+                      <div className="auth-form__logo">
+                        <img src="/images/exx9_logo_dark.png" alt="exx9" />
+                      </div>
                     </motion.div>
                     <motion.div {...fadeUp(0.3)}>
-                      <h2 className="auth-form__title">Sign In</h2>
-                      <p className="auth-form__subtitle">Enter your credentials to access your account.</p>
+                      <h2 className="auth-form__title">Welcome <em>back</em></h2>
+                      <p className="auth-form__subtitle">Enter your credentials to continue trading.</p>
                     </motion.div>
 
                     <motion.div {...fadeUp(0.37)}>
@@ -335,11 +379,13 @@ export default function LoginPage() {
                 {/* ── DEMO ── */}
                 {activeStep === 2 && (
                   <div className="auth-form">
-                    <motion.div {...fadeUp(0.2)} className="flex justify-center mb-2">
-                      <img src="/images/exx9 logo.png" alt="exx9" className="w-16 h-16 object-contain" />
+                    <motion.div {...fadeUp(0.2)}>
+                      <div className="auth-form__logo">
+                        <img src="/images/exx9_logo_dark.png" alt="exx9" />
+                      </div>
                     </motion.div>
                     <motion.div {...fadeUp(0.3)}>
-                      <h2 className="auth-form__title">Demo Account</h2>
+                      <h2 className="auth-form__title">Try a <em>demo</em></h2>
                       <p className="auth-form__subtitle">Try the platform instantly with a demo account.</p>
                     </motion.div>
 

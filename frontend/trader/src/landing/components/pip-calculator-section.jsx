@@ -260,7 +260,7 @@ export function PipCalculatorSection() {
               <div className="space-y-2">
                 {[
                   { type: "Standard",  size: "100,000 units", color: "bg-primary" },
-                  { type: "Mini",      size: "10,000 units",  color: "bg-blue-500" },
+                  { type: "Mini",      size: "10,000 units",  color: "bg-emerald-500" },
                   { type: "Micro",     size: "1,000 units",   color: "bg-emerald-500" },
                 ].map(row => (
                   <div key={row.type} className="flex items-center justify-between py-2 border-b border-white/20 last:border-0">

@@ -321,7 +321,7 @@ export default function PropFirmPage() {
 
               {/* TradingView */}
               <div className="bg-white border border-border rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-                <div className="relative h-48 bg-gradient-to-br from-blue-900 to-blue-800 flex items-center justify-center">
+                <div className="relative h-48 bg-gradient-to-br from-emerald-900 to-emerald-800 flex items-center justify-center">
                   <BarChart3 className="w-20 h-20 text-primary" />
                 </div>
                 <div className="p-6">

@@ -439,7 +439,7 @@ export default function AccountsPage() {
   };
 
   const newAccountCtaClass =
-    'inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg border-2 border-[#2196f3] text-[#2196f3] text-sm font-bold hover:bg-[#2196f3]/10 transition-colors shrink-0';
+    'inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg border-2 border-[#10b981] text-[#10b981] text-sm font-bold hover:bg-[#10b981]/10 transition-colors shrink-0';
 
   /** Open the live account picker only if KYC is approved; otherwise show the KYC gate modal. */
   const handleOpenNewAccount = () => {
@@ -503,7 +503,7 @@ export default function AccountsPage() {
             <Link
               href="/kyc"
               onClick={() => setKycGateOpen(false)}
-              className="px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] transition-colors text-center"
+              className="px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] transition-colors text-center"
             >
               Complete KYC
             </Link>
@@ -532,7 +532,7 @@ export default function AccountsPage() {
             <Link
               href="/auth/register"
               onClick={() => setDemoUpgradeOpen(false)}
-              className="px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] transition-colors text-center"
+              className="px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] transition-colors text-center"
             >
               Register Real Account
             </Link>
@@ -720,7 +720,7 @@ export default function AccountsPage() {
                         setTab('accounts');
                         handleOpenNewAccount();
                       }}
-                      className="text-sm font-bold text-[#2196f3] hover:underline"
+                      className="text-sm font-bold text-[#10b981] hover:underline"
                     >
                       Open live account
                     </button>
@@ -756,7 +756,7 @@ export default function AccountsPage() {
                       const isWallet = uniFrom === 'wallet';
                       return (
                         <div className="rounded-xl border border-accent/35 bg-bg-base p-4 flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#2196f3]/12 flex items-center justify-center text-[#2196f3] shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-[#10b981]/12 flex items-center justify-center text-[#10b981] shrink-0">
                             {isWallet ? <Wallet size={20} strokeWidth={2} /> : <Landmark size={20} strokeWidth={2} />}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -815,7 +815,7 @@ export default function AccountsPage() {
                       const isWallet = uniTo === 'wallet';
                       return (
                         <div className="rounded-xl border border-border-primary bg-bg-base p-4 flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#2196f3]/12 flex items-center justify-center text-[#2196f3] shrink-0">
+                          <div className="w-10 h-10 rounded-full bg-[#10b981]/12 flex items-center justify-center text-[#10b981] shrink-0">
                             {isWallet ? <Wallet size={20} strokeWidth={2} /> : <Landmark size={20} strokeWidth={2} />}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -842,7 +842,7 @@ export default function AccountsPage() {
                           setTransferAmount(uniFromBalance > 0 ? uniFromBalance.toFixed(2) : '')
                         }
                         disabled={uniFromBalance <= 0}
-                        className="text-sm font-bold text-[#2196f3] hover:underline disabled:opacity-40 disabled:pointer-events-none"
+                        className="text-sm font-bold text-[#10b981] hover:underline disabled:opacity-40 disabled:pointer-events-none"
                       >
                         Max: {fmt(uniFromBalance)}
                       </button>
@@ -869,7 +869,7 @@ export default function AccountsPage() {
                       uniFromBalance <= 0 ||
                       uniFrom === uniTo
                     }
-                    className="w-full py-3.5 rounded-xl bg-[#2196f3] text-white text-base font-bold hover:bg-[#1976d2] disabled:opacity-45 disabled:pointer-events-none transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-[#10b981] text-white text-base font-bold hover:bg-[#059669] disabled:opacity-45 disabled:pointer-events-none transition-colors flex items-center justify-center gap-2"
                   >
                     <ArrowLeftRight size={20} />
                     {transferSubmitting ? 'Transferring…' : 'Transfer'}
@@ -1066,7 +1066,7 @@ function BalanceTrendBlock({ accountId, balance }: { accountId: string; balance:
       <div className="rounded-xl bg-bg-base border border-border-primary relative overflow-hidden" style={{ minHeight: '140px', maxHeight: '220px', aspectRatio: `${W}/${H + 10}` }}>
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-5 w-5 border-2 border-[#2196f3] border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
           <svg className="w-full h-full" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
@@ -1242,7 +1242,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
   const headerIcon = tripped
     ? <ShieldAlert size={18} className="text-red-400" />
     : risk.enabled
-      ? <ShieldCheck size={18} className="text-[#2196f3]" />
+      ? <ShieldCheck size={18} className="text-[#10b981]" />
       : <Shield size={18} className="text-text-tertiary" />;
 
   const headerLabel = tripped
@@ -1258,7 +1258,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
         tripped
           ? 'border-red-500/40 bg-red-500/5'
           : risk.enabled
-            ? 'border-[#2196f3]/30 bg-[#2196f3]/5'
+            ? 'border-[#10b981]/30 bg-[#10b981]/5'
             : 'border-border-primary bg-bg-secondary',
       )}
     >
@@ -1276,7 +1276,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
           <p className="text-[10px] text-text-tertiary font-medium uppercase tracking-wider">Current loss</p>
           <p className={clsx(
             'text-base font-bold tabular-nums font-mono',
-            risk.current_drawdown_pct > 0 ? 'text-red-400' : 'text-[#2196f3]',
+            risk.current_drawdown_pct > 0 ? 'text-red-400' : 'text-[#10b981]',
           )}>
             {risk.current_drawdown_pct > 0 ? `-${risk.current_drawdown_pct.toFixed(2)}%` : '0.00%'}
           </p>
@@ -1302,7 +1302,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
             type="checkbox"
             checked={draftEnabled}
             onChange={(e) => setDraftEnabled(e.target.checked)}
-            className="h-4 w-4 accent-[#2196f3]"
+            className="h-4 w-4 accent-[#10b981]"
           />
           Enable loss limit
         </label>
@@ -1315,7 +1315,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
             value={draftPct}
             onChange={(e) => setDraftPct(e.target.value)}
             disabled={!draftEnabled}
-            className="w-20 px-2 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono tabular-nums outline-none focus:border-[#2196f3]/40 disabled:opacity-50"
+            className="w-20 px-2 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono tabular-nums outline-none focus:border-[#10b981]/40 disabled:opacity-50"
           />
           <span className="text-xs text-text-tertiary">% of deposit</span>
         </div>
@@ -1334,7 +1334,7 @@ function RiskProtectionPanel({ accountId, isOpen }: { accountId: string; isOpen:
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#2196f3] text-white text-xs font-bold hover:bg-[#1976d2] transition-colors disabled:opacity-60"
+            className="inline-flex items-center justify-center px-4 py-1.5 rounded-lg bg-[#10b981] text-white text-xs font-bold hover:bg-[#059669] transition-colors disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -1437,7 +1437,7 @@ function AccountCard({
         <span
           className={clsx(
             'mt-2 h-2.5 w-2.5 rounded-full shrink-0',
-            row.is_demo ? 'bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.7)]' : 'bg-[#2196f3] shadow-[0_0_6px_rgba(33,150,243,0.7)]',
+            row.is_demo ? 'bg-emerald-400 shadow-[0_0_6px_rgba(56,189,248,0.7)]' : 'bg-[#10b981] shadow-[0_0_6px_rgba(33,150,243,0.7)]',
           )}
           aria-hidden
         />
@@ -1478,11 +1478,11 @@ function AccountCard({
             <div className="min-w-0">
               <p className="text-[10px] sm:text-[11px] text-text-tertiary font-medium mb-0.5">P&amp;L</p>
               <div className="flex items-center gap-1">
-                <span className={clsx('text-sm sm:text-lg font-bold tabular-nums font-mono truncate', pnlPositive ? 'text-[#2196f3]' : 'text-red-400')}>
+                <span className={clsx('text-sm sm:text-lg font-bold tabular-nums font-mono truncate', pnlPositive ? 'text-[#10b981]' : 'text-red-400')}>
                   ~{' '}{pnlPositive ? '+' : ''}{fmt(pnl, row.currency)}
                 </span>
               </div>
-              <p className={clsx('text-[10px] sm:text-xs font-semibold tabular-nums', pnlPositive ? 'text-[#2196f3]/70' : 'text-red-400/70')}>
+              <p className={clsx('text-[10px] sm:text-xs font-semibold tabular-nums', pnlPositive ? 'text-[#10b981]/70' : 'text-red-400/70')}>
                 ({pnlPositive ? '+' : ''}{pct.toFixed(2)}%)
               </p>
             </div>
@@ -1576,7 +1576,7 @@ function AccountCard({
                 <Link
                   href={`/portfolio?account_id=${encodeURIComponent(row.id)}&account_no=${encodeURIComponent(row.account_number)}&tab=history`}
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] transition-colors"
                 >
                   <BookOpen size={16} />
                   View Trades
@@ -1608,7 +1608,7 @@ function AccountCard({
                   href={tradeHref}
                   prefetch
                   onClick={(e) => { e.stopPropagation(); onTradePrepare(); }}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] transition-colors"
                 >
                   Trade
                   <ExternalLink size={14} />
@@ -1635,7 +1635,7 @@ function AccountCard({
                   href={tradeHref}
                   prefetch
                   onClick={(e) => { e.stopPropagation(); onTradePrepare(); }}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-[#2196f3] text-white text-xs sm:text-sm font-bold hover:bg-[#1976d2] transition-colors"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-[#10b981] text-white text-xs sm:text-sm font-bold hover:bg-[#059669] transition-colors"
                 >
                   Trade
                   <ExternalLink size={13} />

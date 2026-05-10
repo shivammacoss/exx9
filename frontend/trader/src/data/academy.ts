@@ -7,7 +7,7 @@ export const phases = [
     duration: '4-6 Weeks',
     level: 'BEGINNER',
     totalMinutes: 170,
-    color: '#2196f3',
+    color: '#10b981',
     description: 'Build an unshakeable foundation. No shortcuts. No skipping. Every professional trader started here.',
     modules: [
       { id: '1.1', title: 'What Is the Forex Market?', topics: 6, minutes: 20, level: 'BEGINNER' },

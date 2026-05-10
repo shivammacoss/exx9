@@ -139,7 +139,7 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
 
           {loading ? (
             <div className="flex flex-col items-center gap-3 py-12">
-              <div className="w-8 h-8 border-2 border-[#2196f3] border-t-transparent rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin" />
               <span className="text-sm text-text-secondary">Loading account types…</span>
             </div>
           ) : groups.length === 0 ? (
@@ -158,8 +158,8 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
                       className={clsx(
                         'w-full text-left rounded-xl border-2 p-4 sm:p-5 transition-all',
                         isSel
-                          ? 'border-[#2196f3] bg-[#2196f3]/[0.06] shadow-[0_0_0_3px_rgba(33,150,243,0.15)]'
-                          : 'border-border-primary bg-bg-secondary hover:border-[#2196f3]/40 hover:bg-bg-hover',
+                          ? 'border-[#10b981] bg-[#10b981]/[0.06] shadow-[0_0_0_3px_rgba(33,150,243,0.15)]'
+                          : 'border-border-primary bg-bg-secondary hover:border-[#10b981]/40 hover:bg-bg-hover',
                       )}
                     >
                       <div className="flex items-start justify-between gap-4">
@@ -167,7 +167,7 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="text-base font-bold text-text-primary">{g.name}</span>
                             {g.swap_free ? (
-                              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#2196f3]/15 text-[#2196f3] border border-[#2196f3]/25">
+                              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#10b981]/15 text-[#10b981] border border-[#10b981]/25">
                                 Swap-free
                               </span>
                             ) : null}
@@ -206,7 +206,7 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
                           className={clsx(
                             'shrink-0 mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all',
                             isSel
-                              ? 'border-[#2196f3] bg-[#2196f3]'
+                              ? 'border-[#10b981] bg-[#10b981]'
                               : 'border-border-secondary bg-bg-card',
                           )}
                         >
@@ -232,7 +232,7 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
               type="button"
               disabled={loading || groups.length === 0 || !selectedId}
               onClick={goToLeverageStep}
-              className="px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-[0_2px_8px_rgba(33,150,243,0.25)]"
+              className="px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-[0_2px_8px_rgba(33,150,243,0.25)]"
             >
               Continue
             </button>
@@ -252,11 +252,11 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
             Back to account types
           </button>
 
-          <div className="rounded-xl border-2 border-[#2196f3]/30 bg-[#2196f3]/[0.04] p-4 space-y-1">
+          <div className="rounded-xl border-2 border-[#10b981]/30 bg-[#10b981]/[0.04] p-4 space-y-1">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-text-primary">{selectedGroup.name}</span>
               {selectedGroup.swap_free ? (
-                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#2196f3]/15 text-[#2196f3]">
+                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#10b981]/15 text-[#10b981]">
                   Swap-free
                 </span>
               ) : null}
@@ -286,13 +286,13 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
                     className={clsx(
                       'relative px-3 py-3 rounded-lg border-2 text-center font-mono font-bold tabular-nums text-sm transition-all',
                       isSel
-                        ? 'border-[#2196f3] bg-[#2196f3]/10 text-[#2196f3] shadow-[0_0_0_3px_rgba(33,150,243,0.15)]'
-                        : 'border-border-primary bg-bg-secondary text-text-primary hover:border-[#2196f3]/40 hover:bg-bg-hover',
+                        ? 'border-[#10b981] bg-[#10b981]/10 text-[#10b981] shadow-[0_0_0_3px_rgba(33,150,243,0.15)]'
+                        : 'border-border-primary bg-bg-secondary text-text-primary hover:border-[#10b981]/40 hover:bg-bg-hover',
                     )}
                   >
                     1:{lev}
                     {isMax && (
-                      <span className="absolute -top-1.5 -right-1.5 text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#2196f3] text-white leading-none">
+                      <span className="absolute -top-1.5 -right-1.5 text-[8px] font-bold uppercase px-1 py-0.5 rounded bg-[#10b981] text-white leading-none">
                         Max
                       </span>
                     )}
@@ -314,7 +314,7 @@ export default function AccountTypePickerModal({ open, onClose, onCreated }: Pro
               type="button"
               disabled={creating || !chosenLeverage}
               onClick={() => void handleCreate()}
-              className="px-5 py-2.5 rounded-lg bg-[#2196f3] text-white text-sm font-bold hover:bg-[#1976d2] disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-[0_2px_8px_rgba(33,150,243,0.25)]"
+              className="px-5 py-2.5 rounded-lg bg-[#10b981] text-white text-sm font-bold hover:bg-[#059669] disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-[0_2px_8px_rgba(33,150,243,0.25)]"
             >
               {creating ? 'Creating…' : `Open Account (1:${chosenLeverage})`}
             </button>

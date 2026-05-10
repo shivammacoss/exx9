@@ -42,9 +42,9 @@ const config: Config = {
           inverse: 'var(--text-inverse)',
         },
         buy: {
-          DEFAULT: '#2196f3',
-          light: '#64b5f6',
-          dark: '#1976d2',
+          DEFAULT: '#10b981',
+          light: '#34d399',
+          dark: '#059669',
           bg: 'rgba(33,150,243,0.1)',
           glow: 'rgba(33,150,243,0.22)',
         },
@@ -55,7 +55,7 @@ const config: Config = {
           bg: 'rgba(239,68,68,0.1)',
           glow: 'rgba(239,68,68,0.2)',
         },
-        accent: { DEFAULT: 'hsl(var(--accent, 207 90% 54%))', foreground: 'hsl(var(--accent-foreground, 0 0% 100%))', light: '#64b5f6', dark: '#1976d2' },
+        accent: { DEFAULT: 'hsl(var(--accent, 145 75% 38%))', foreground: 'hsl(var(--accent-foreground, 0 0% 100%))', light: '#34d399', dark: '#059669' },
         /* shadcn-compatible color tokens (driven by CSS vars; scoped overrides in landing.css) */
         background: 'hsl(var(--background, 0 0% 100%))',
         foreground: 'hsl(var(--foreground, 240 10% 4%))',
@@ -64,7 +64,7 @@ const config: Config = {
         destructive: { DEFAULT: 'hsl(var(--destructive, 0 84% 60%))', foreground: 'hsl(var(--destructive-foreground, 0 0% 100%))' },
         input: 'hsl(var(--input, 240 5% 90%))',
         ring: 'hsl(var(--ring, 240 5% 64%))',
-        success: '#1976d2',
+        success: '#059669',
         warning: '#FFB300',
         info: '#29B6F6',
         danger: '#FF1744',
@@ -79,12 +79,12 @@ const config: Config = {
         },
         /* Landing-page palette + shadcn primary */
         'primary': {
-          DEFAULT: 'hsl(var(--primary, 207 90% 54%))',
+          DEFAULT: 'hsl(var(--primary, 145 75% 38%))',
           foreground: 'hsl(var(--primary-foreground, 0 0% 100%))',
           bg: '#0A0E1A',
           secondary: '#0F1628',
-          accent: '#1A56FF',
-          purple: '#7B2FFF',
+          accent: '#84cc16',
+          purple: '#10b981',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary, 240 5% 96%))',
@@ -92,7 +92,7 @@ const config: Config = {
         },
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(135deg, #7B2FFF, #1A56FF)',
+        'gradient-primary': 'linear-gradient(135deg, #10b981, #84cc16)',
         'gradient-hero': 'linear-gradient(135deg, #0A0E1A 0%, #1A1F3A 50%, #2A1F4A 100%)',
         'gradient-section': 'linear-gradient(180deg, #0A0E1A 0%, #0F1628 100%)',
         'gradient-section-alt': 'linear-gradient(180deg, #0F1628 0%, #0A0E1A 100%)',
@@ -144,22 +144,22 @@ const config: Config = {
         walletNeonTabGlow: {
           '0%, 100%': {
             boxShadow:
-              '0 -1px 20px rgba(33, 150, 243, 0.22), 0 0 32px rgba(33, 150, 243, 0.12), inset 0 0 24px rgba(33, 150, 243, 0.04)',
+              '0 -1px 20px rgba(16, 185, 129, 0.22), 0 0 32px rgba(16, 185, 129, 0.12), inset 0 0 24px rgba(16, 185, 129, 0.04)',
           },
           '50%': {
             boxShadow:
-              '0 -1px 36px rgba(33, 150, 243, 0.45), 0 0 52px rgba(33, 150, 243, 0.22), inset 0 0 32px rgba(33, 150, 243, 0.08)',
+              '0 -1px 36px rgba(16, 185, 129, 0.45), 0 0 52px rgba(16, 185, 129, 0.22), inset 0 0 32px rgba(16, 185, 129, 0.08)',
           },
         },
         /** Deposit / Withdraw main tabs — stronger pulsing glow */
         walletMainTabGlow: {
           '0%, 100%': {
             boxShadow:
-              '0 -6px 40px rgba(33, 150, 243, 0.38), 0 0 56px rgba(33, 150, 243, 0.2), inset 0 1px 0 rgba(33, 150, 243, 0.14)',
+              '0 -6px 40px rgba(16, 185, 129, 0.38), 0 0 56px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(16, 185, 129, 0.14)',
           },
           '50%': {
             boxShadow:
-              '0 -10px 64px rgba(33, 150, 243, 0.62), 0 0 88px rgba(33, 150, 243, 0.32), inset 0 1px 0 rgba(33, 150, 243, 0.22)',
+              '0 -10px 64px rgba(16, 185, 129, 0.62), 0 0 88px rgba(16, 185, 129, 0.32), inset 0 1px 0 rgba(16, 185, 129, 0.22)',
           },
         },
         walletMainTabText: {
@@ -189,8 +189,8 @@ const config: Config = {
         'skeu': 'inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.3)',
         'glow-blue': '0 0 20px rgba(33,150,243,0.28), 0 0 60px rgba(33,150,243,0.1)',
         'glow-red': '0 0 20px rgba(239,68,68,0.3), 0 0 60px rgba(239,68,68,0.1)',
-        'neon-green-sm': '0 0 20px rgba(33, 150, 243, 0.25), 0 0 48px rgba(33, 150, 243, 0.08)',
-        'neon-green-lg': '0 0 28px rgba(33, 150, 243, 0.4), 0 0 64px rgba(33, 150, 243, 0.15)',
+        'neon-green-sm': '0 0 20px rgba(16, 185, 129, 0.25), 0 0 48px rgba(16, 185, 129, 0.08)',
+        'neon-green-lg': '0 0 28px rgba(16, 185, 129, 0.4), 0 0 64px rgba(16, 185, 129, 0.15)',
       },
     },
   },

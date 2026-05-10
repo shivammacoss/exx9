@@ -68,7 +68,7 @@ export default function AppSidebar() {
           <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
             <span className="inline-flex items-baseline font-bold italic tracking-tight text-xl select-none">
               <span className="text-text-primary">exx9</span>
-              <span className="text-[#2196f3]">FX</span>
+              <span className="text-[#10b981]">FX</span>
             </span>
           </Link>
           <button
@@ -103,7 +103,7 @@ export default function AppSidebar() {
                   size={17}
                   strokeWidth={1.85}
                   className={cn(
-                    'shrink-0 transition-[filter,color] sidebar-icon-glow text-[#2196f3]',
+                    'shrink-0 transition-[filter,color] sidebar-icon-glow text-[#10b981]',
                     isActive
                       ? 'drop-shadow-[0_0_8px_rgba(33,150,243,0.55)]'
                       : 'drop-shadow-[0_0_6px_rgba(33,150,243,0.35)]',

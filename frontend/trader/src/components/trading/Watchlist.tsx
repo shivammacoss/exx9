@@ -368,7 +368,7 @@ export default function Watchlist({ variant = 'default', onExitMarkets }: Watchl
           <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-2.5 bg-bg-secondary border-b border-border-primary">
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <div
-                className="w-8 h-8 rounded-full shrink-0 bg-gradient-to-br from-amber-400 to-blue-500"
+                className="w-8 h-8 rounded-full shrink-0 bg-gradient-to-br from-amber-400 to-emerald-500"
                 aria-hidden
               />
               <span className="text-sm font-bold text-text-primary font-mono truncate">{selectedSymbol}</span>
@@ -455,7 +455,7 @@ export default function Watchlist({ variant = 'default', onExitMarkets }: Watchl
                           >
                             <div className="flex items-center gap-2 min-w-0 pl-3">
                               <div
-                                className="w-6 h-6 rounded-full shrink-0 bg-gradient-to-br from-amber-400/90 to-blue-500/90"
+                                className="w-6 h-6 rounded-full shrink-0 bg-gradient-to-br from-amber-400/90 to-emerald-500/90"
                                 aria-hidden
                               />
                               <span className="text-sm font-bold text-text-primary font-mono">{symbol}</span>
@@ -478,7 +478,7 @@ export default function Watchlist({ variant = 'default', onExitMarkets }: Watchl
                               </div>
                               <div className="flex flex-col items-end gap-0.5">
                                 {tick ? (
-                                  <span className="text-xs font-mono font-semibold tabular-nums text-[#2196f3]">
+                                  <span className="text-xs font-mono font-semibold tabular-nums text-[#10b981]">
                                     {tick.ask.toFixed(digits)}
                                   </span>
                                 ) : (

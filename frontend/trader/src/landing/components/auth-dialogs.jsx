@@ -55,33 +55,43 @@ export function LoginDialog({ trigger }) {
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setError("") }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 pb-4">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-foreground">Welcome Back</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden border-emerald-200/60 shadow-[0_24px_60px_-15px_rgba(16,185,129,0.35)]">
+        {/* Brand header with gradient + logo */}
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-7 pb-5 border-b border-emerald-100/80 overflow-hidden">
+          <div className="pointer-events-none absolute -top-12 -right-10 w-44 h-44 rounded-full bg-emerald-400/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-12 -left-10 w-44 h-44 rounded-full bg-lime-400/15 blur-3xl" />
+          <div className="relative flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white border border-emerald-200 shadow-sm shadow-emerald-500/20">
+              <img src="/images/exx9_logo_dark.png" alt="" className="w-7 h-7 object-contain" />
+            </div>
+            <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-emerald-700 via-emerald-500 to-lime-500 bg-clip-text text-transparent">exx9</span>
+          </div>
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Welcome Back</DialogTitle>
+            <DialogDescription className="text-slate-500 text-sm pt-1">
               Sign in to access your trading account
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 pt-4 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 pt-5 space-y-5 bg-white">
           {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
-              {error}
+            <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700 flex items-start gap-2">
+              <span className="mt-0.5">⚠</span>
+              <span>{error}</span>
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="login-email" className="text-sm font-medium text-foreground">
+            <Label htmlFor="login-email" className="text-sm font-semibold text-slate-700">
               Email Address
             </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative group">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <Input
                 id="login-email"
                 type="email"
-                placeholder="Enter your email"
-                className="pl-10 h-11"
+                placeholder="you@example.com"
+                className="pl-11 h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all dark:bg-white dark:text-slate-900"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -91,12 +101,12 @@ export function LoginDialog({ trigger }) {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="login-password" className="text-sm font-medium text-foreground">
+              <Label htmlFor="login-password" className="text-sm font-semibold text-slate-700">
                 Password
               </Label>
               <button
                 type="button"
-                className="text-xs text-primary hover:underline"
+                className="text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2"
                 onClick={() => {
                   setOpen(false)
                   router.push("/auth/forgot-password")
@@ -105,20 +115,20 @@ export function LoginDialog({ trigger }) {
                 Forgot Password?
               </button>
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <div className="relative group">
+              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               <Input
                 id="login-password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
-                className="pl-10 pr-10 h-11"
+                className="pl-11 pr-11 h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all dark:bg-white dark:text-slate-900"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -128,17 +138,17 @@ export function LoginDialog({ trigger }) {
 
           <Button
             type="submit"
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
+            className="w-full h-12 bg-gradient-to-r from-emerald-600 via-emerald-500 to-lime-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-lime-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
             disabled={isLoading}
           >
-            {isLoading ? "Signing In..." : "Sign In"}
+            {isLoading ? "Signing In..." : "Sign In →"}
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-slate-500 pt-1">
             Don&apos;t have an account?{" "}
             <button
               type="button"
-              className="text-primary hover:underline cursor-pointer font-medium bg-transparent p-0 border-0"
+              className="font-bold text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 bg-transparent p-0 border-0 cursor-pointer"
               onClick={() => {
                 setOpen(false)
                 router.push("/auth/register")
@@ -209,7 +219,7 @@ export function OpenAccountDialog({ trigger }) {
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setError("") }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px] p-0 overflow-hidden">
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 pb-4">
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-7 pb-5 border-b border-emerald-100/80 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground">Create Account</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -225,7 +235,7 @@ export function OpenAccountDialog({ trigger }) {
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="register-name" className="text-sm font-medium text-foreground">
+            <Label htmlFor="register-name" className="text-sm font-semibold text-slate-700">
               Full Name
             </Label>
             <div className="relative">
@@ -234,7 +244,7 @@ export function OpenAccountDialog({ trigger }) {
                 id="register-name"
                 type="text"
                 placeholder="Enter your full name"
-                className="pl-10 h-11"
+                className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 required
@@ -243,7 +253,7 @@ export function OpenAccountDialog({ trigger }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="register-email" className="text-sm font-medium text-foreground">
+            <Label htmlFor="register-email" className="text-sm font-semibold text-slate-700">
               Email Address
             </Label>
             <div className="relative">
@@ -252,7 +262,7 @@ export function OpenAccountDialog({ trigger }) {
                 id="register-email"
                 type="email"
                 placeholder="Enter your email"
-                className="pl-10 h-11"
+                className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
@@ -261,7 +271,7 @@ export function OpenAccountDialog({ trigger }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="register-phone" className="text-sm font-medium text-foreground">
+            <Label htmlFor="register-phone" className="text-sm font-semibold text-slate-700">
               Phone Number
             </Label>
             <div className="relative">
@@ -270,7 +280,7 @@ export function OpenAccountDialog({ trigger }) {
                 id="register-phone"
                 type="tel"
                 placeholder="Enter your phone number"
-                className="pl-10 h-11"
+                className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
@@ -279,7 +289,7 @@ export function OpenAccountDialog({ trigger }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="register-password" className="text-sm font-medium text-foreground">
+            <Label htmlFor="register-password" className="text-sm font-semibold text-slate-700">
               Password
             </Label>
             <div className="relative">
@@ -288,7 +298,7 @@ export function OpenAccountDialog({ trigger }) {
                 id="register-password"
                 type={showPassword ? "text" : "password"}
                 placeholder="At least 8 characters"
-                className="pl-10 pr-10 h-11"
+                className="pl-10 pr-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 minLength={8}
@@ -305,7 +315,7 @@ export function OpenAccountDialog({ trigger }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="register-confirm-password" className="text-sm font-medium text-foreground">
+            <Label htmlFor="register-confirm-password" className="text-sm font-semibold text-slate-700">
               Confirm Password
             </Label>
             <div className="relative">
@@ -314,7 +324,7 @@ export function OpenAccountDialog({ trigger }) {
                 id="register-confirm-password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Confirm your password"
-                className="pl-10 h-11"
+                className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
@@ -324,7 +334,7 @@ export function OpenAccountDialog({ trigger }) {
 
           <Button
             type="submit"
-            className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
+            className="w-full h-12 bg-gradient-to-r from-emerald-600 via-emerald-500 to-lime-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-lime-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
             disabled={isLoading}
           >
             {isLoading ? "Creating Account..." : "Create Account"}
@@ -334,7 +344,7 @@ export function OpenAccountDialog({ trigger }) {
             Already have an account?{" "}
             <button
               type="button"
-              className="text-primary hover:underline cursor-pointer font-medium bg-transparent p-0 border-0"
+              className="font-bold text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 bg-transparent p-0 border-0 cursor-pointer"
               onClick={() => {
                 setOpen(false)
                 router.push("/auth/login")
@@ -346,9 +356,9 @@ export function OpenAccountDialog({ trigger }) {
 
           <p className="text-xs text-muted-foreground text-center">
             By creating an account, you agree to our{" "}
-            <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
+            <span className="text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 cursor-pointer font-medium">Terms of Service</span>
             {" "}and{" "}
-            <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
+            <span className="text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 cursor-pointer font-medium">Privacy Policy</span>
           </p>
         </form>
       </DialogContent>
@@ -396,11 +406,11 @@ export function TalkToTeamDialog({ trigger }) {
     <Dialog onOpenChange={(open) => { if (!open) { setSubmitted(false); setError("") } }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 pb-4">
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-7 pb-5 border-b border-emerald-100/80 overflow-hidden">
           <DialogHeader>
             <div className="flex items-center gap-3 mb-1">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <HeadphonesIcon className="w-5 h-5 text-primary" />
+              <div className="w-11 h-11 bg-gradient-to-br from-emerald-100 to-lime-100 rounded-xl flex items-center justify-center shadow-sm shadow-emerald-500/20 border border-emerald-200">
+                <HeadphonesIcon className="w-5 h-5 text-emerald-600" />
               </div>
               <DialogTitle className="text-2xl font-bold text-foreground">Talk to Our Team</DialogTitle>
             </div>
@@ -417,8 +427,8 @@ export function TalkToTeamDialog({ trigger }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-foreground">Message Sent!</h3>
-            <p className="text-muted-foreground text-sm max-w-xs">
+            <h3 className="text-xl font-bold text-slate-900">Message Sent!</h3>
+            <p className="text-slate-500 text-sm max-w-xs">
               Thank you for reaching out. A member of our partnership team will contact you within 24 hours.
             </p>
           </div>
@@ -431,24 +441,24 @@ export function TalkToTeamDialog({ trigger }) {
             )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="talk-firstname" className="text-sm font-medium text-foreground">First Name</Label>
+                <Label htmlFor="talk-firstname" className="text-sm font-semibold text-slate-700">First Name</Label>
                 <Input
                   id="talk-firstname"
                   type="text"
                   placeholder="First name"
-                  className="h-11"
+                  className="h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="talk-lastname" className="text-sm font-medium text-foreground">Last Name</Label>
+                <Label htmlFor="talk-lastname" className="text-sm font-semibold text-slate-700">Last Name</Label>
                 <Input
                   id="talk-lastname"
                   type="text"
                   placeholder="Last name"
-                  className="h-11"
+                  className="h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
@@ -457,14 +467,14 @@ export function TalkToTeamDialog({ trigger }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="talk-email" className="text-sm font-medium text-foreground">Email Address</Label>
+              <Label htmlFor="talk-email" className="text-sm font-semibold text-slate-700">Email Address</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="talk-email"
                   type="email"
                   placeholder="Enter your email"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -473,14 +483,14 @@ export function TalkToTeamDialog({ trigger }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="talk-phone" className="text-sm font-medium text-foreground">Phone Number</Label>
+              <Label htmlFor="talk-phone" className="text-sm font-semibold text-slate-700">Phone Number</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="talk-phone"
                   type="tel"
                   placeholder="Enter your phone number"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
@@ -489,14 +499,14 @@ export function TalkToTeamDialog({ trigger }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="talk-company" className="text-sm font-medium text-foreground">Company <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="talk-company" className="text-sm font-semibold text-slate-700">Company <span className="text-slate-400 font-normal">(optional)</span></Label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="talk-company"
                   type="text"
                   placeholder="Your company name"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 />
@@ -504,14 +514,14 @@ export function TalkToTeamDialog({ trigger }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="talk-message" className="text-sm font-medium text-foreground">Message <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="talk-message" className="text-sm font-semibold text-slate-700">Message <span className="text-slate-400 font-normal">(optional)</span></Label>
               <div className="relative">
                 <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <textarea
                   id="talk-message"
                   rows={3}
                   placeholder="How can we help you?"
-                  className="w-full rounded-md border border-input bg-background pl-10 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none"
+                  className="w-full rounded-md border border-slate-200 bg-white pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none transition-colors"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 />
@@ -520,7 +530,7 @@ export function TalkToTeamDialog({ trigger }) {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-emerald-600 via-emerald-500 to-lime-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-lime-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
               disabled={isLoading}
             >
               {isLoading ? "Sending..." : "Send Message"}
@@ -583,7 +593,7 @@ export function BecomePartnerDialog({ trigger }) {
     <Dialog onOpenChange={(open) => { if (!open) { setSubmitted(false); setError("") } }}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-6 pb-4">
+        <div className="relative bg-gradient-to-br from-emerald-50 via-white to-lime-50 p-7 pb-5 border-b border-emerald-100/80 overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-foreground">Become a Partner</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -599,8 +609,8 @@ export function BecomePartnerDialog({ trigger }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-foreground">Application Received!</h3>
-            <p className="text-muted-foreground text-sm max-w-xs">
+            <h3 className="text-xl font-bold text-slate-900">Application Received!</h3>
+            <p className="text-slate-500 text-sm max-w-xs">
               Thank you for your interest in partnering with VXNESS. Our partnership team will review your application and reach out within 1–2 business days.
             </p>
           </div>
@@ -613,14 +623,14 @@ export function BecomePartnerDialog({ trigger }) {
             )}
             {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="partner-name" className="text-sm font-medium text-foreground">Full Name</Label>
+              <Label htmlFor="partner-name" className="text-sm font-semibold text-slate-700">Full Name</Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="partner-name"
                   type="text"
                   placeholder="Enter your full name"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   required
@@ -630,14 +640,14 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="partner-email" className="text-sm font-medium text-foreground">Email Address</Label>
+              <Label htmlFor="partner-email" className="text-sm font-semibold text-slate-700">Email Address</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="partner-email"
                   type="email"
                   placeholder="Enter your email"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
@@ -647,14 +657,14 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="partner-phone" className="text-sm font-medium text-foreground">Phone Number</Label>
+              <Label htmlFor="partner-phone" className="text-sm font-semibold text-slate-700">Phone Number</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="partner-phone"
                   type="tel"
                   placeholder="Enter your phone number"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   required
@@ -664,14 +674,14 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Company */}
             <div className="space-y-2">
-              <Label htmlFor="partner-company" className="text-sm font-medium text-foreground">Company / Organisation <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="partner-company" className="text-sm font-semibold text-slate-700">Company / Organisation <span className="text-slate-400 font-normal">(optional)</span></Label>
               <div className="relative">
                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="partner-company"
                   type="text"
                   placeholder="Your company name"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                 />
@@ -680,14 +690,14 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Website */}
             <div className="space-y-2">
-              <Label htmlFor="partner-website" className="text-sm font-medium text-foreground">Website / Social Profile <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="partner-website" className="text-sm font-semibold text-slate-700">Website / Social Profile <span className="text-slate-400 font-normal">(optional)</span></Label>
               <div className="relative">
                 <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   id="partner-website"
                   type="url"
                   placeholder="https://yourwebsite.com"
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 bg-white text-slate-900 placeholder:text-slate-400 dark:bg-white dark:text-slate-900"
                   value={formData.website}
                   onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                 />
@@ -696,10 +706,10 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Partner Type */}
             <div className="space-y-2">
-              <Label htmlFor="partner-type" className="text-sm font-medium text-foreground">Partnership Type</Label>
+              <Label htmlFor="partner-type" className="text-sm font-semibold text-slate-700">Partnership Type</Label>
               <select
                 id="partner-type"
-                className="w-full h-11 rounded-md border border-input bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/50"
+                className="w-full h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors"
                 value={formData.partnerType}
                 onChange={(e) => setFormData({ ...formData, partnerType: e.target.value })}
                 required
@@ -713,14 +723,14 @@ export function BecomePartnerDialog({ trigger }) {
 
             {/* Message */}
             <div className="space-y-2">
-              <Label htmlFor="partner-message" className="text-sm font-medium text-foreground">Message <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="partner-message" className="text-sm font-semibold text-slate-700">Message <span className="text-slate-400 font-normal">(optional)</span></Label>
               <div className="relative">
                 <MessageSquare className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <textarea
                   id="partner-message"
                   rows={3}
                   placeholder="Tell us about your audience, experience or goals..."
-                  className="w-full rounded-md border border-input bg-background pl-10 pr-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none"
+                  className="w-full rounded-md border border-slate-200 bg-white pl-10 pr-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none transition-colors"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 />
@@ -729,7 +739,7 @@ export function BecomePartnerDialog({ trigger }) {
 
             <Button
               type="submit"
-              className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-emerald-600 via-emerald-500 to-lime-500 hover:from-emerald-700 hover:via-emerald-600 hover:to-lime-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:hover:translate-y-0"
               disabled={isLoading}
             >
               {isLoading ? "Submitting..." : "Submit Application"}
@@ -737,9 +747,9 @@ export function BecomePartnerDialog({ trigger }) {
 
             <p className="text-xs text-muted-foreground text-center">
               By submitting, you agree to our{" "}
-              <span className="text-primary hover:underline cursor-pointer">Terms of Service</span>
+              <span className="text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 cursor-pointer font-medium">Terms of Service</span>
               {" "}and{" "}
-              <span className="text-primary hover:underline cursor-pointer">Privacy Policy</span>
+              <span className="text-emerald-600 hover:text-emerald-700 hover:underline underline-offset-2 cursor-pointer font-medium">Privacy Policy</span>
             </p>
           </form>
         )}

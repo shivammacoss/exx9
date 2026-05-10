@@ -6,7 +6,7 @@ import { Calendar, Clock, TrendingUp, TrendingDown, Minus, ChevronDown } from "l
 const impactStyles = {
   High:   { color: "text-red-600",    dot: "bg-red-500",    badge: "bg-red-50 text-red-600 border-red-200" },
   Medium: { color: "text-yellow-600", dot: "bg-yellow-500", badge: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  Low:    { color: "text-blue-500",   dot: "bg-blue-400",   badge: "bg-blue-50 text-blue-600 border-blue-200" },
+  Low:    { color: "text-emerald-500",   dot: "bg-emerald-400",   badge: "bg-emerald-50 text-emerald-600 border-emerald-200" },
 }
 
 const currencyFlags = {
@@ -16,7 +16,7 @@ const currencyFlags = {
 const impactConfig = {
   High:   { color: "text-red-600",    dot: "bg-red-500",    badge: "bg-red-50 text-red-600 border-red-200" },
   Medium: { color: "text-yellow-600", dot: "bg-yellow-500", badge: "bg-yellow-50 text-yellow-600 border-yellow-200" },
-  Low:    { color: "text-blue-500",   dot: "bg-blue-400",   badge: "bg-blue-50 text-blue-600 border-blue-200" },
+  Low:    { color: "text-emerald-500",   dot: "bg-emerald-400",   badge: "bg-emerald-50 text-emerald-600 border-emerald-200" },
 }
 
 const events = [

@@ -21,26 +21,26 @@ export default function LandingFooter() {
           <div>
             <p className="font-semibold text-gray-900 mb-4">Products</p>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/platforms" className="hover:text-blue-600 transition-colors">Trading Platforms</Link></li>
-              <li><Link href="/white-label" className="hover:text-blue-600 transition-colors">White Label</Link></li>
-              <li><Link href="/auth/register" className="hover:text-blue-600 transition-colors">Open Live Account</Link></li>
-              <li><Link href="/auth/register" className="hover:text-blue-600 transition-colors">Demo Account</Link></li>
+              <li><Link href="/platforms" className="hover:text-emerald-600 transition-colors">Trading Platforms</Link></li>
+              <li><Link href="/white-label" className="hover:text-emerald-600 transition-colors">White Label</Link></li>
+              <li><Link href="/auth/register" className="hover:text-emerald-600 transition-colors">Open Live Account</Link></li>
+              <li><Link href="/auth/register" className="hover:text-emerald-600 transition-colors">Demo Account</Link></li>
             </ul>
           </div>
 
           <div>
             <p className="font-semibold text-gray-900 mb-4">Company</p>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact</Link></li>
-              <li><Link href="/white-label" className="hover:text-blue-600 transition-colors">Partnerships</Link></li>
+              <li><Link href="/about" className="hover:text-emerald-600 transition-colors">About Us</Link></li>
+              <li><Link href="/contact" className="hover:text-emerald-600 transition-colors">Contact</Link></li>
+              <li><Link href="/white-label" className="hover:text-emerald-600 transition-colors">Partnerships</Link></li>
             </ul>
           </div>
 
           <div>
             <p className="font-semibold text-gray-900 mb-4">Support</p>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact Support</Link></li>
+              <li><Link href="/contact" className="hover:text-emerald-600 transition-colors">Contact Support</Link></li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4 shrink-0" />
                 <span>+1 (908) 228-0305</span>
@@ -52,9 +52,9 @@ export default function LandingFooter() {
         <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} exx9. All rights reserved.</p>
           <div className="flex items-center gap-5 text-sm text-gray-400">
-            <Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link>
-            <Link href="/risk" className="hover:text-blue-600 transition-colors">Risk Disclosure</Link>
+            <Link href="/privacy" className="hover:text-emerald-600 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-emerald-600 transition-colors">Terms of Service</Link>
+            <Link href="/risk" className="hover:text-emerald-600 transition-colors">Risk Disclosure</Link>
           </div>
         </div>
       </div>

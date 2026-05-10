@@ -75,7 +75,7 @@ function TopLoaderInner() {
         zIndex: 9999,
         height: '2px',
         width: `${progress}%`,
-        background: 'linear-gradient(90deg, #2196f3, #1976d2)',
+        background: 'linear-gradient(90deg, #10b981, #059669)',
         boxShadow: '0 0 8px rgba(33,150,243,0.6)',
         transition: progress === 100 ? 'width 0.15s ease, opacity 0.3s ease' : 'width 0.1s ease-out',
         opacity: progress === 100 ? 0 : 1,

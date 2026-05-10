@@ -9,7 +9,7 @@ const accountTypes = [
     name: "Standard Account",
     badge: "Beginner-Friendly",
     icon: Star,
-    color: "bg-blue-500",
+    color: "bg-emerald-500",
     features: [
       { label: "Minimum Deposit", value: "$100" },
       { label: "Platform", value: "MT5" },

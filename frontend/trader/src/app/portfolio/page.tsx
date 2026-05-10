@@ -597,7 +597,7 @@ function PortfolioPageContent() {
 
       <DashboardShell mainClassName="flex items-center justify-center bg-[#050505]">
         <div className="flex flex-col items-center gap-3 py-12">
-          <div className="w-8 h-8 border-2 border-[#2196f3] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-[#888]">Loading portfolio...</span>
         </div>
       </DashboardShell>
@@ -642,7 +642,7 @@ function PortfolioPageContent() {
         {invalidAccountParam ? (
           <div className="rounded-xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-text-primary">
             Invalid account id in the URL — showing your full portfolio.{' '}
-            <Link href="/portfolio" className="font-semibold text-[#2196f3] underline underline-offset-2 hover:text-[#1976d2]">
+            <Link href="/portfolio" className="font-semibold text-[#10b981] underline underline-offset-2 hover:text-[#059669]">
               Reset
             </Link>
           </div>
@@ -661,7 +661,7 @@ function PortfolioPageContent() {
             <select
               value={validAccountId ?? ''}
               onChange={(e) => handleAccountChange(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono outline-none focus:border-[#2196f3]/40 max-w-full"
+              className="px-3 py-1.5 rounded-lg border border-border-primary bg-bg-input text-sm text-text-primary font-mono outline-none focus:border-[#10b981]/40 max-w-full"
               aria-label="Filter by account"
             >
               <option value="">All accounts</option>
@@ -1065,7 +1065,7 @@ function PortfolioPageContent() {
                       className={clsx(
                         'min-w-[32px] h-8 px-2 rounded-md text-xs font-semibold transition-colors border',
                         n === page
-                          ? 'bg-[#2196f3] text-text-inverse border-[#2196f3]'
+                          ? 'bg-[#10b981] text-text-inverse border-[#10b981]'
                           : 'bg-bg-card text-text-secondary border-border-primary hover:bg-bg-hover',
                       )}
                     >
@@ -1103,7 +1103,7 @@ export default function PortfolioPage() {
       fallback={(
         <DashboardShell mainClassName="flex items-center justify-center bg-[#050505]">
           <div className="flex flex-col items-center gap-3 py-12">
-            <div className="w-8 h-8 border-2 border-[#2196f3] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#10b981] border-t-transparent rounded-full animate-spin" />
             <span className="text-sm text-[#888]">Loading portfolio...</span>
           </div>
         </DashboardShell>
