@@ -56,7 +56,7 @@ export default function PartnershipPage() {
       })
       setSubmitState({
         status: "success",
-        message: "Thanks — our partnership team will be in touch within 1–2 business days.",
+        message: "Thanks â€” our partnership team will be in touch within 1â€“2 business days.",
       })
       setFormData({ firstName: "", lastName: "", email: "", company: "", phone: "", privacyAccepted: false })
     } catch (err) {

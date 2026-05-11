@@ -71,7 +71,7 @@ const faqs = [
   },
   {
     question: "What leverage is available?",
-    answer: "Up to 1:1000* — subject to regulatory limits and instrument.",
+    answer: "Up to 1:1000* â€” subject to regulatory limits and instrument.",
   },
 ]
 
@@ -122,7 +122,7 @@ export default function IndicesPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live Indices Chart — Default US30"
+          title="Live Indices Chart â€” Default US30"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />
