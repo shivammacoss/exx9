@@ -54,7 +54,7 @@ export function Footer() {
           {/* Logo Column */}
           <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center mb-6">
-              <img src="/images/exx9_logo_dark.png"
+              <img src="/images/exx9_logo_light.png"
                 alt="exx9"
                 width={140}
                 height={36}

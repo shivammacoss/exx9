@@ -82,7 +82,7 @@ export default function AppHeader() {
           aria-label="Toggle menu"
         >
           <img
-            src="/images/exx9_logo_dark.png"
+            src="/images/exx9_logo_light.png"
             alt="exx9"
             className="w-10 h-10 object-contain"
           />

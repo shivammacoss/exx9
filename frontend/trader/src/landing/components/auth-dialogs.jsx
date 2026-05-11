@@ -62,7 +62,7 @@ export function LoginDialog({ trigger }) {
           <div className="pointer-events-none absolute -bottom-12 -left-10 w-44 h-44 rounded-full bg-lime-400/15 blur-3xl" />
           <div className="relative flex items-center gap-3 mb-3">
             <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white border border-emerald-200 shadow-sm shadow-emerald-500/20">
-              <img src="/images/exx9_logo_dark.png" alt="" className="w-7 h-7 object-contain" />
+              <img src="/images/exx9_logo_light.png" alt="" className="w-7 h-7 object-contain" />
             </div>
             <span className="text-lg font-extrabold tracking-tight bg-gradient-to-r from-emerald-700 via-emerald-500 to-lime-500 bg-clip-text text-transparent">exx9</span>
           </div>

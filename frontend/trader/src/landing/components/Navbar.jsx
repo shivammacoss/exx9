@@ -36,7 +36,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <img src="/images/exx9_logo_dark.png"
+            <img src="/images/exx9_logo_light.png"
               alt="exx9"
               width={140}
               height={36}

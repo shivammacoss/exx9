@@ -230,7 +230,7 @@ export default function LoginPage() {
               {/* Brand wordmark */}
               <motion.div className="auth-brand" {...fadeUp(0.2)}>
                 <div className="auth-brand__logo">
-                  <img src="/images/exx9_logo_dark.png" alt="" />
+                  <img src="/images/exx9_logo_light.png" alt="" />
                 </div>
                 <span className="auth-brand__name">exx9</span>
               </motion.div>
@@ -301,7 +301,7 @@ export default function LoginPage() {
                   <form className="auth-form" onSubmit={handleSignIn} noValidate>
                     <motion.div {...fadeUp(0.2)}>
                       <div className="auth-form__logo">
-                        <img src="/images/exx9_logo_dark.png" alt="exx9" />
+                        <img src="/images/exx9_logo_light.png" alt="exx9" />
                       </div>
                     </motion.div>
                     <motion.div {...fadeUp(0.3)}>
@@ -381,7 +381,7 @@ export default function LoginPage() {
                   <div className="auth-form">
                     <motion.div {...fadeUp(0.2)}>
                       <div className="auth-form__logo">
-                        <img src="/images/exx9_logo_dark.png" alt="exx9" />
+                        <img src="/images/exx9_logo_light.png" alt="exx9" />
                       </div>
                     </motion.div>
                     <motion.div {...fadeUp(0.3)}>
