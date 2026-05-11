@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { Navbar } from "@/landing/components/navbar"
+import { Navbar } from "@/landing/components/Navbar"
 import { HeroSection } from "@/landing/components/hero-section"
 import { MarketAccessSection } from "@/landing/components/market-access-section"
 import { PricingTableSection } from "@/landing/components/pricing-table-section"
@@ -15,7 +15,7 @@ import { SocialTradingSection } from "@/landing/components/social-trading-sectio
 import { AwardsSection } from "@/landing/components/awards-section"
 import { SupportSection } from "@/landing/components/support-section"
 import { MobileAppSection } from "@/landing/components/mobile-app-section"
-import { Footer } from "@/landing/components/footer"
+import { Footer } from "@/landing/components/Footer"
 
 export default function Home() {
   return (

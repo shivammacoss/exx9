@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { ArrowRight } from "lucide-react"
 import { WaveSeparator } from "@/landing/components/wave-separator"
 

@@ -1,8 +1,8 @@
-ï»¿'use client'
+'use client'
 
 import { useEffect, useState, useCallback } from "react"
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { MarketHero } from "@/landing/components/markets/market-hero"
 import { StatsBanner } from "@/landing/components/markets/stats-banner"
 import { TradingViewChart } from "@/landing/components/markets/tradingview-chart"
@@ -63,7 +63,7 @@ const faqs = [
   },
   {
     question: "What are typical spreads?",
-    answer: "Dependent on market â€” energy spreads can be extremely tight during liquid hours.",
+    answer: "Dependent on market — energy spreads can be extremely tight during liquid hours.",
   },
   {
     question: "What commodities are available?",
@@ -71,7 +71,7 @@ const faqs = [
   },
   {
     question: "What leverage is available?",
-    answer: "Up to 1:1000* â€” subject to regulatory limits and instrument.",
+    answer: "Up to 1:1000* — subject to regulatory limits and instrument.",
   },
 ]
 
@@ -111,7 +111,7 @@ export default function CommoditiesPage() {
       
       <MarketHero
         headline="Trade Global Commodities with Confidence"
-        subhead="Energy and agricultural markets including Brent, WTI, Natural Gas, Coffee and more â€” backed by regulated CFD execution."
+        subhead="Energy and agricultural markets including Brent, WTI, Natural Gas, Coffee and more — backed by regulated CFD execution."
         ctaPrimary="View Commodities"
         ctaSecondary="Trade Now"
       />
@@ -122,7 +122,7 @@ export default function CommoditiesPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live Commodities Chart â€” Default UKOIL (Brent)"
+          title="Live Commodities Chart — Default UKOIL (Brent)"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />

@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState, useCallback } from "react"
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { MarketHero } from "@/landing/components/markets/market-hero"
 import { StatsBanner } from "@/landing/components/markets/stats-banner"
 import { TradingViewChart } from "@/landing/components/markets/tradingview-chart"
@@ -120,7 +120,7 @@ export default function MetalsPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live Metals Chart — Default XAUUSD (Gold)"
+          title="Live Metals Chart � Default XAUUSD (Gold)"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />

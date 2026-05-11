@@ -1,8 +1,8 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { FileText, ArrowRight } from "lucide-react"
 
 const legalDocs = [

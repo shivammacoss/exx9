@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { Button } from "@/landing/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { OpenAccountDialog } from "@/landing/components/auth-dialogs"

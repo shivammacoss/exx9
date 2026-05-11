@@ -1,8 +1,8 @@
-ï»¿'use client'
+'use client'
 
 import { useEffect, useState, useCallback } from "react"
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { MarketHero } from "@/landing/components/markets/market-hero"
 import { StatsBanner } from "@/landing/components/markets/stats-banner"
 import { TradingViewChart } from "@/landing/components/markets/tradingview-chart"
@@ -71,7 +71,7 @@ const faqs = [
   },
   {
     question: "What leverage is available?",
-    answer: "Up to 1:1000* â€” subject to regulatory limits and instrument.",
+    answer: "Up to 1:1000* — subject to regulatory limits and instrument.",
   },
 ]
 
@@ -122,7 +122,7 @@ export default function IndicesPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live Indices Chart â€” Default US30"
+          title="Live Indices Chart — Default US30"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />

@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { PipCalculatorSection } from "@/landing/components/pip-calculator-section"
 import { WaveSeparator } from "@/landing/components/wave-separator"
 

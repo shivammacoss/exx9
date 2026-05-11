@@ -1,8 +1,8 @@
-ï»¿'use client'
+'use client'
 
 import { useState } from "react"
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { Button } from "@/landing/components/ui/button"
 import { Input } from "@/landing/components/ui/input"
 import { Checkbox } from "@/landing/components/ui/checkbox"
@@ -56,7 +56,7 @@ export default function PartnershipPage() {
       })
       setSubmitState({
         status: "success",
-        message: "Thanks â€” our partnership team will be in touch within 1â€“2 business days.",
+        message: "Thanks — our partnership team will be in touch within 1–2 business days.",
       })
       setFormData({ firstName: "", lastName: "", email: "", company: "", phone: "", privacyAccepted: false })
     } catch (err) {

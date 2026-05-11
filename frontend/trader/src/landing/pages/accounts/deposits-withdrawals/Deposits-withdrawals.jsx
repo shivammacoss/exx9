@@ -1,7 +1,7 @@
-﻿'use client'
+'use client'
 
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { MarketHero } from "@/landing/components/markets/market-hero"
 import { TradingViewChart } from "@/landing/components/markets/tradingview-chart"
 import { FAQAccordion } from "@/landing/components/markets/faq-accordion"

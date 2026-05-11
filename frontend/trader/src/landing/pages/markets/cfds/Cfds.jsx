@@ -1,8 +1,8 @@
-ï»¿'use client'
+'use client'
 
 import { useEffect, useState, useCallback } from "react"
-import { Navbar } from "@/landing/components/navbar"
-import { Footer } from "@/landing/components/footer"
+import { Navbar } from "@/landing/components/Navbar"
+import { Footer } from "@/landing/components/Footer"
 import { MarketHero } from "@/landing/components/markets/market-hero"
 import { StatsBanner } from "@/landing/components/markets/stats-banner"
 import { TradingViewChart } from "@/landing/components/markets/tradingview-chart"
@@ -51,7 +51,7 @@ const benefits = [
   {
     icon: TrendingDown,
     title: "Short Positions",
-    description: "Go short to profit from falling markets â€” all from a single account.",
+    description: "Go short to profit from falling markets — all from a single account.",
   },
   {
     icon: Layers,
@@ -90,11 +90,11 @@ const faqs = [
   },
   {
     question: "Is there a demo account?",
-    answer: "Yes â€” request a demo to practice without real funds.",
+    answer: "Yes — request a demo to practice without real funds.",
   },
   {
     question: "Are commissions charged?",
-    answer: "Varies by instrument â€” some raw accounts use commission + spread, others have variable spread only.",
+    answer: "Varies by instrument — some raw accounts use commission + spread, others have variable spread only.",
   },
   {
     question: "What is the minimum deposit?",
@@ -138,7 +138,7 @@ export default function CFDsPage() {
       
       <MarketHero
         headline="Trade Global Markets via CFDs"
-        subhead="Over 50 CFD instruments â€” Forex, indices, commodities, and crypto â€” with competitive spreads, rapid execution and flexible margining."
+        subhead="Over 50 CFD instruments — Forex, indices, commodities, and crypto — with competitive spreads, rapid execution and flexible margining."
         ctaPrimary="Open Account"
         ctaSecondary="View Instruments"
       />
@@ -149,7 +149,7 @@ export default function CFDsPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live CFD Chart â€” US30 Default"
+          title="Live CFD Chart — US30 Default"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />
