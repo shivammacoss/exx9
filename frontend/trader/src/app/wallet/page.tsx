@@ -121,8 +121,8 @@ function WalletPageContent() {
   const fundPanelRef = useRef<HTMLDivElement>(null);
 
   const [fundMainTab, setFundMainTab] = useState<'deposit' | 'withdraw'>('deposit');
-  const [depositUiSection, setDepositUiSection] = useState<'crypto' | 'manual'>('crypto');
-  const [withdrawUiSection, setWithdrawUiSection] = useState<'crypto' | 'bank'>('crypto');
+  const [depositUiSection, setDepositUiSection] = useState<'crypto' | 'manual'>('manual');
+  const [withdrawUiSection, setWithdrawUiSection] = useState<'crypto' | 'bank'>('bank');
   const [selectedCryptoDeposit, setSelectedCryptoDeposit] = useState<string>(CRYPTO_ASSETS[0].id);
   const [selectedCryptoWithdraw, setSelectedCryptoWithdraw] = useState<string>(CRYPTO_ASSETS[0].id);
 
@@ -897,7 +897,8 @@ function WalletPageContent() {
 
                   {/* Deposit Method Tabs */}
                   <div className="flex gap-2 border-b border-border-glass">
-                    {(['crypto', 'manual'] as const).map((method) => {
+                    {/* OxaPay crypto deposit temporarily hidden — only manual */}
+                    {(['manual'] as const).map((method) => {
                       const active = depositUiSection === method;
                       return (
                         <button
@@ -1129,9 +1130,9 @@ function WalletPageContent() {
                     you need is available on the main wallet before requesting a payout.
                   </p>
 
-                  {/* Payment method sub-tabs */}
+                  {/* Payment method sub-tabs — OxaPay crypto temporarily hidden, only Bank */}
                   <div className="flex gap-1 p-1 rounded-xl bg-bg-secondary border border-border-secondary">
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => setWithdrawUiSection('crypto')}
                       className={clsx(
@@ -1142,7 +1143,7 @@ function WalletPageContent() {
                       )}
                     >
                       Crypto
-                    </button>
+                    </button> */}
                     <button
                       type="button"
                       onClick={() => setWithdrawUiSection('bank')}
