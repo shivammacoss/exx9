@@ -182,7 +182,6 @@ function FieldError({
   children,
   errors,
   ...props
-}:  | undefined>
 }) {
   const content = useMemo(() => {
     if (children) {
