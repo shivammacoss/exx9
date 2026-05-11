@@ -120,7 +120,7 @@ export default function MetalsPage() {
 
       <div id="live-chart">
         <TradingViewChart
-          title="Live Metals Chart — Default XAUUSD (Gold)"
+          title="Live Metals Chart â€” Default XAUUSD (Gold)"
           defaultSymbol={chartSymbol}
           quickSymbols={quickSymbols}
         />

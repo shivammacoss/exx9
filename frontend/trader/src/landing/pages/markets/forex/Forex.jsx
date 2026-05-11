@@ -95,7 +95,7 @@ const faqs = [
   },
   {
     question: "What leverage is available?",
-    answer: "Up to 1:1000* — subject to regulatory limits and instrument.",
+    answer: "Up to 1:1000* â€” subject to regulatory limits and instrument.",
   },
   {
     question: "How are spreads calculated?",
@@ -103,7 +103,7 @@ const faqs = [
   },
   {
     question: "What are the trading hours?",
-    answer: "Forex markets operate 24/5 — specific instrument hours shown in the instrument table.",
+    answer: "Forex markets operate 24/5 â€” specific instrument hours shown in the instrument table.",
   },
 ]
 
@@ -132,7 +132,7 @@ export default function ForexPage() {
       
       <MarketHero
         headline="Trade Forex with Institutional Precision"
-        subhead="60+ currency pairs, raw spreads from 0.0 pips, dynamic leverage up to 1:1000*, and 24/5 specialist support — all from a single account."
+        subhead="60+ currency pairs, raw spreads from 0.0 pips, dynamic leverage up to 1:1000*, and 24/5 specialist support â€” all from a single account."
         ctaPrimary="Open Account"
         ctaSecondary="Download Platform"
       />
@@ -158,7 +158,7 @@ export default function ForexPage() {
 
       <WhatIsSection
         title="What is Forex Trading?"
-        content="Forex is the global exchange of currencies — the world's largest financial market. Traders speculate on currency pair price movements using leverage and margin to amplify capital efficiency. CFDs provide market exposure without physical currency delivery."
+        content="Forex is the global exchange of currencies â€” the world's largest financial market. Traders speculate on currency pair price movements using leverage and margin to amplify capital efficiency. CFDs provide market exposure without physical currency delivery."
       />
 
       <BenefitsGrid

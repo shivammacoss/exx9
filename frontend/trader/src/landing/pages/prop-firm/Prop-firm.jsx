@@ -41,7 +41,7 @@ export default function PropFirmPage() {
                 Empowering Modern Trading Businesses
               </h1>
               <p className="text-lg text-white/80 mb-8 leading-relaxed">
-                Launch, manage, and scale a professional proprietary trading firm with our powerful and scalable infrastructure. From challenge management to trader funding systems — everything on one unified platform.
+                Launch, manage, and scale a professional proprietary trading firm with our powerful and scalable infrastructure. From challenge management to trader funding systems â€” everything on one unified platform.
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4 mb-10">

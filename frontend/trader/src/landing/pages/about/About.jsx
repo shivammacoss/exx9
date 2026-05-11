@@ -101,7 +101,7 @@ export default function AboutPage() {
                 Eonefx evolved into a trusted trading partner serving over <span className="text-white font-semibold">4 million registered clients</span> worldwide.
               </p>
               <p className="text-white/90 leading-relaxed font-medium">
-                Today, we are entering our most ambitious phase — redefining trader engagement, product innovation, and global accessibility for 2026 and beyond.
+                Today, we are entering our most ambitious phase â€” redefining trader engagement, product innovation, and global accessibility for 2026 and beyond.
               </p>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-2xl font-bold text-white mb-4">Our Vision</h3>
               <p className="text-white/80 leading-relaxed">
-                To become the preferred institutional gateway for professional traders seeking reliable execution, deep liquidity, and regulatory transparency — where technology meets ambition across global markets.
+                To become the preferred institutional gateway for professional traders seeking reliable execution, deep liquidity, and regulatory transparency â€” where technology meets ambition across global markets.
               </p>
             </div>
             
@@ -356,10 +356,10 @@ export default function AboutPage() {
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-sm font-medium text-foreground mb-1">Regulated Activities</p>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Dealing in securities as a principal</li>
-                    <li>• Underwriting as a principal</li>
-                    <li>• Advising on securities</li>
-                    <li>• Asset management</li>
+                    <li>â€¢ Dealing in securities as a principal</li>
+                    <li>â€¢ Underwriting as a principal</li>
+                    <li>â€¢ Advising on securities</li>
+                    <li>â€¢ Asset management</li>
                   </ul>
                 </div>
               </div>
