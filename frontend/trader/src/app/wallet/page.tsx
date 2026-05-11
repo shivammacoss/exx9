@@ -912,7 +912,7 @@ function WalletPageContent() {
                               : 'border-transparent text-text-tertiary hover:text-text-primary'
                           )}
                         >
-                          {method === 'crypto' ? 'Crypto (OxaPay)' : 'Manual (Bank/UPI)'}
+                          Manual (Bank/UPI)
                         </button>
                       );
                     })}
