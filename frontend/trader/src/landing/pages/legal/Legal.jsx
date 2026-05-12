@@ -14,6 +14,7 @@ const legalDocs = [
   { title: "Relationship Disclosure", href: "/legal/relationship-disclosure", description: "Information about our relationship with clients." },
   { title: "Restricted Countries", href: "/legal/restricted-countries", description: "List of countries where our services are not available." },
   { title: "Terms of Use", href: "/legal/terms-of-use", description: "Terms for using our website and platform." },
+  { title: "Cookie Policy", href: "/legal/cookie-policy", description: "How we use cookies and similar tracking technologies." },
 ]
 
 export default function LegalPage() {

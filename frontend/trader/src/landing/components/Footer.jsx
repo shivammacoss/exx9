@@ -7,10 +7,10 @@ const footerLinks = {
   platform: {
     title: "Platform",
     links: [
-      { label: "Copy Trading", href: "/markets/forex" },
-      { label: "Strategy Library", href: "/tools/trading-platform" },
-      { label: "Backtesting", href: "/tools/heatmap" },
-      { label: "Dashboard", href: "/accounts/types" },
+      { label: "Copy Trading", href: "/social" },
+      { label: "Strategy Library", href: "/edge-builder" },
+      { label: "Backtesting", href: "/edge-builder" },
+      { label: "Dashboard", href: "/dashboard" },
       { label: "Pricing", href: "/accounts/types" },
     ],
   },
@@ -18,20 +18,20 @@ const footerLinks = {
     title: "Company",
     links: [
       { label: "About exx9", href: "/about" },
-      { label: "Our Story", href: "/about" },
-      { label: "Careers", href: "/about" },
-      { label: "Press Kit", href: "/about" },
+      { label: "Our Story", href: "/about#our-story" },
+      { label: "Careers", href: "/about#careers" },
+      { label: "Press Kit", href: "/about#press" },
       { label: "Blog", href: "/blog" },
     ],
   },
   support: {
     title: "Support",
     links: [
-      { label: "Help Center", href: "/contact" },
-      { label: "WhatsApp", href: "/contact" },
+      { label: "Help Center", href: "/support" },
+      { label: "WhatsApp", href: "https://wa.me/19082280305", external: true },
       { label: "Contact", href: "/contact" },
-      { label: "Video Tutorials", href: "/blog" },
-      { label: "FAQs", href: "/contact" },
+      { label: "Video Tutorials", href: "/academy" },
+      { label: "FAQs", href: "/support#faqs" },
     ],
   },
   legal: {
@@ -40,7 +40,7 @@ const footerLinks = {
       { label: "Privacy Policy", href: "/legal/privacy-policy" },
       { label: "Terms of Use", href: "/legal/terms-of-use" },
       { label: "Risk Disclosure", href: "/legal/risk-disclosure" },
-      { label: "Cookie Policy", href: "/legal" },
+      { label: "Cookie Policy", href: "/legal/cookie-policy" },
     ],
   },
 }
@@ -84,9 +84,20 @@ export function Footer() {
               <ul className="space-y-2">
                 {section.links.map((link, index) => (
                   <li key={index}>
-                    <Link href={link.href} className="text-sm text-white/60 hover:text-primary transition-colors">
-                      {link.label}
-                    </Link>
+                    {link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-white/60 hover:text-primary transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link href={link.href} className="text-sm text-white/60 hover:text-primary transition-colors">
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
