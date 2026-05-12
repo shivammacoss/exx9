@@ -49,8 +49,8 @@ const IconMarket = ({ active }: { active: boolean }) => (
   </svg>
 );
 
-const IconChart = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const IconChart = ({ active }: { active: boolean }) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? 2 : 1.75} strokeLinecap="round" strokeLinejoin="round">
     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
     <polyline points="16 7 22 7 22 13" />
   </svg>
@@ -194,21 +194,16 @@ export default function MobileBottomNav() {
               <span className={clsx('text-[10px] font-semibold', isMarket ? 'text-accent' : 'text-text-tertiary')}>Market</span>
             </a>
 
-            {/* Chart — elevated center button */}
+            {/* Chart */}
             <a
               href={chartHref}
               onClick={goToTerminalView('chart')}
-              className="flex flex-col items-center justify-center flex-1 -mt-4"
+              className="flex flex-col items-center justify-center gap-[2px] flex-1 py-2"
             >
-              <div className={clsx(
-                'w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all',
-                isChart
-                  ? 'bg-accent text-text-inverse shadow-[0_4px_20px_rgba(33,150,243,0.4)]'
-                  : 'bg-bg-secondary text-text-secondary border border-border-primary',
-              )}>
-                <IconChart />
-              </div>
-              <span className={clsx('text-[10px] font-semibold mt-1', isChart ? 'text-accent' : 'text-text-tertiary')}>Chart</span>
+              <span className={clsx('transition-colors', isChart ? 'text-accent' : 'text-text-tertiary')}>
+                <IconChart active={isChart} />
+              </span>
+              <span className={clsx('text-[10px] font-semibold', isChart ? 'text-accent' : 'text-text-tertiary')}>Chart</span>
             </a>
 
             {/* Orders */}
