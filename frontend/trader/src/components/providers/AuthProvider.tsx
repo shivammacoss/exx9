@@ -23,7 +23,6 @@ const PUBLIC_PREFIXES = [
   '/privacy',
   '/terms',
   '/risk',
-  '/news',
   '/s/',
 ];
 
