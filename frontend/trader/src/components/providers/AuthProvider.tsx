@@ -8,6 +8,39 @@ import toast from 'react-hot-toast';
 
 const STAFF_ROLES = new Set(['admin', 'super_admin', 'employee', 'manager', 'support']);
 
+/* Routes that anyone (signed-in or not) can view. Keep in sync with src/app/(landing)/* */
+const PUBLIC_PREFIXES = [
+  '/about',
+  '/blog',
+  '/contact',
+  '/legal',
+  '/markets',
+  '/partnership',
+  '/platforms',
+  '/prop-firm',
+  '/tools',
+  '/white-label',
+  '/privacy',
+  '/terms',
+  '/risk',
+  '/news',
+  '/s/',
+];
+
+const PUBLIC_EXACT = new Set<string>([
+  '/',
+  '/accounts/types',
+  '/accounts/deposits-withdrawals',
+]);
+
+function isPublicPath(pathname: string | null | undefined): boolean {
+  if (!pathname) return false;
+  if (PUBLIC_EXACT.has(pathname)) return true;
+  return PUBLIC_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p.endsWith('/') ? p : p + '/'),
+  );
+}
+
 function MaintenanceScreen() {
   return (
     <div style={{
@@ -72,15 +105,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isInitialized) {
       const isAuthPage = pathname?.startsWith('/auth');
-      const isLandingPage =
-        pathname === '/' ||
-        pathname?.startsWith('/company') ||
-        pathname?.startsWith('/education') ||
-        ['/trading/forex', '/trading/commodities', '/trading/indices', '/trading/crypto'].includes(pathname || '') ||
-        ['/platforms/web', '/platforms/copy-trading', '/platforms/prop-trading', '/platforms/ib-management', '/platforms/super-admin'].includes(pathname || '') ||
-        ['/accounts/standard', '/accounts/pro', '/accounts/demo'].includes(pathname || '');
       const isSharePage = pathname?.startsWith('/s/');
-      const isPublic = isLandingPage || isSharePage || pathname === '/privacy' || pathname === '/terms' || pathname === '/risk' || pathname === '/about' || pathname === '/contact' || pathname === '/platforms' || pathname === '/white-label';
+      const isPublic = isPublicPath(pathname);
 
       if (!isAuthenticated && !isAuthPage && !isPublic) {
         router.push('/auth/login');
@@ -95,15 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   /* Skip loading screen for landing & auth pages — render immediately */
   if (!isInitialized) {
     const isAuthPage = pathname?.startsWith('/auth');
-    const isLanding =
-      pathname === '/' ||
-      pathname?.startsWith('/company') ||
-      pathname?.startsWith('/education') ||
-      ['/trading/forex', '/trading/commodities', '/trading/indices', '/trading/crypto'].includes(pathname || '') ||
-      ['/platforms/web', '/platforms/copy-trading', '/platforms/prop-trading', '/platforms/ib-management', '/platforms/super-admin'].includes(pathname || '') ||
-      ['/accounts/standard', '/accounts/pro', '/accounts/demo'].includes(pathname || '');
-    const isSharePage = pathname?.startsWith('/s/');
-    const isPublicPage = isLanding || isAuthPage || isSharePage || pathname === '/privacy' || pathname === '/terms' || pathname === '/risk' || pathname === '/about' || pathname === '/contact' || pathname === '/platforms' || pathname === '/white-label';
+    const isPublicPage = isAuthPage || isPublicPath(pathname);
 
     /* Already know maintenance is ON from persisted store → block immediately */
     if (!isPublicPage && maintenance) return <MaintenanceScreen />;
